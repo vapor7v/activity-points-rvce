@@ -1,11 +1,6 @@
 export const protectedPaths = [
-    "/dashboard",    
-    "/object-detection",
-    "/plant-health",
-    "/analytics",
-    "/history",
-    "/advanced-detection",
-    "/plant-health",
+    "/",
+    "/form-filler"
 ];
 export const authPaths = [
     "/register",

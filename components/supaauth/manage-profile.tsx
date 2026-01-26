@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { CircleUser } from "lucide-react";
-import { cn } from "@/lib/utils";
-import useUser from "@/hooks/use-user";
-import { MdOutlineMarkEmailRead } from "react-icons/md";
-import { FaGithub, FaDiscord } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import Avatar from "./avatar";
-export type IconKey = "email" | "github" | "discord" | "google";
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { CircleUser } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import useUser from '@/hooks/use-user'
+import { MdOutlineMarkEmailRead } from 'react-icons/md'
+import { FaGithub, FaDiscord } from 'react-icons/fa'
+import { FcGoogle } from 'react-icons/fc'
+import Avatar from './avatar'
+export type IconKey = 'email' | 'github' | 'discord' | 'google'
 export const authProvider = {
   email: {
     Icon: MdOutlineMarkEmailRead,
@@ -23,13 +23,13 @@ export const authProvider = {
   google: {
     Icon: FcGoogle,
   },
-};
+}
 export default function ManageProfile() {
-  const [activeTab, setActiveTab] = useState("profile");
-  const { data } = useUser();
+  const [activeTab, setActiveTab] = useState('profile')
+  const { data } = useUser()
   const AuthProviderIcon = data?.app_metadata.provider
     ? authProvider[data?.app_metadata.provider as IconKey].Icon
-    : MdOutlineMarkEmailRead;
+    : MdOutlineMarkEmailRead
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -39,20 +39,18 @@ export default function ManageProfile() {
         <div className=" w-60 h-[100%] rounded-s-lg p-5 space-y-7 ">
           <div>
             <h1 className="text-2xl font-bold">Account</h1>
-            <p className="text-sm dark:text-gray-300 ">
-              Manage your account info.
-            </p>
+            <p className="text-sm dark:text-gray-300 ">Manage your account info.</p>
           </div>
 
           <div
             className={cn(
-              "p-2 flex items-center gap-2  rounded-lg text-sm cursor-pointer transition-all  ",
+              'p-2 flex items-center gap-2  rounded-lg text-sm cursor-pointer transition-all  ',
               {
-                " text-green-700 dark:text-green-500 ring-[0.5px] ring-zinc-400":
-                  activeTab == "profile",
-              },
+                ' text-green-700 dark:text-green-500 ring-[0.5px] ring-zinc-400':
+                  activeTab == 'profile',
+              }
             )}
-            onClick={() => setActiveTab("profile")}
+            onClick={() => setActiveTab('profile')}
           >
             <CircleUser />
             <span>Profile</span>
@@ -79,14 +77,12 @@ export default function ManageProfile() {
               <div className="flex items-center gap-2 px-3">
                 <AuthProviderIcon />
                 <p className="capitalize">{data?.app_metadata.provider}</p>
-                <p className="text-sm text-gray-400">
-                  {data?.user_metadata.user_name}
-                </p>
+                <p className="text-sm text-gray-400">{data?.user_metadata.user_name}</p>
               </div>
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
