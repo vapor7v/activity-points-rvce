@@ -91,7 +91,7 @@ export function ActivityList({
     name: "activities",
   });
 
-  // Watch activities for table updates
+
   const activities = useWatch({
     control,
     name: "activities",
@@ -106,7 +106,7 @@ export function ActivityList({
       id: nanoid(),
       slNo: fields.length + 1,
     });
-    setEditingIndex(fields.length); // Next index
+    setEditingIndex(fields.length);
     setIsDialogOpen(true);
   };
 
@@ -356,7 +356,7 @@ export function ActivityList({
                <div className="space-y-2">
                 <Label>Activity Photos</Label>
                 
-                {/* Photo Previews */}
+
                 {(activities?.[editingIndex]?.photos || []).length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {activities?.[editingIndex]?.photos?.map((photo, pIdx) => (
@@ -395,7 +395,7 @@ export function ActivityList({
                          const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
                          setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...base64Files]);
                          
-                         // Reset file input
+
                          e.target.value = "";
                       } catch (err) {
                         console.error("Error converting files", err);
@@ -441,10 +441,10 @@ export function ActivityList({
                       try {
                         const base64 = await fileToBase64(file);
                         setValue(`activities.${editingIndex}.certificateImage`, base64);
-                        // Also auto-check the "Certificate Available" box
+
                         setValue(`activities.${editingIndex}.certificateAttached`, true);
                         
-                        // Reset file input
+
                         e.target.value = "";
                       } catch (err) {
                          console.error("Error converting file", err);

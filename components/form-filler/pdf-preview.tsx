@@ -11,7 +11,7 @@ export function PDFPreview({ data }: PDFPreviewProps) {
   const [Component, setComponent] = useState<React.ReactNode>(null);
 
   useEffect(() => {
-    // Dynamically load the PDF viewer only on client side
+
     const loadPDFViewer = async () => {
       const { PDFViewer } = await import("@react-pdf/renderer");
       const { PDFDocumentTemplate } = await import("./pdf-document");

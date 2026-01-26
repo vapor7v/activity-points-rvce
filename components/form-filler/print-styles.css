@@ -1,6 +1,6 @@
-/* Print Styles for AICTE Activity Book */
 
-/* Base print settings */
+
+
 @media print {
   body {
     margin: 0;
@@ -14,7 +14,7 @@
   }
 }
 
-/* Page definitions */
+
 @page {
   size: A4;
   margin: 15mm;
@@ -28,7 +28,7 @@
   size: A4 landscape;
 }
 
-/* Print Document Container */
+
 .print-document {
   font-family: "Times New Roman", Times, serif;
   font-size: 12pt;
@@ -36,7 +36,7 @@
   background: white;
 }
 
-/* Page Base Styles */
+
 .page {
   background: white;
   padding: 20mm;
@@ -62,9 +62,7 @@
   min-height: 210mm;
 }
 
-/* ============================================
-   HEADER STYLES - Matching exact RVCE template
-   ============================================ */
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -121,9 +119,7 @@
   margin: 2px 0;
 }
 
-/* ============================================
-   FOOTER STYLES - Matching exact RVCE template
-   ============================================ */
+
 .page-footer {
   position: absolute;
   bottom: 15mm;
@@ -152,7 +148,7 @@
   color: #1e3a5f;
 }
 
-/* Certificate Page Styles */
+
 .certificate-page .certificate-content {
   margin-top: 60px;
   text-align: center;
@@ -203,7 +199,7 @@
   height: 40px;
 }
 
-/* Index Page Styles */
+
 .section-title {
   text-align: center;
   font-size: 16pt;
@@ -229,7 +225,7 @@
   color: #c41e3a;
 }
 
-/* Table Styles */
+
 .index-table,
 .evaluation-table,
 .activity-detail-table {
@@ -267,7 +263,7 @@
   font-style: italic;
 }
 
-/* Index continuation */
+
 .index-continuation-content {
   margin-top: 40px;
 }
@@ -279,7 +275,7 @@
   padding: 0 40px;
 }
 
-/* Evaluator Signatures */
+
 .evaluator-signature-section {
   display: flex;
   justify-content: space-between;
@@ -296,7 +292,7 @@
   font-weight: bold;
 }
 
-/* Activity Detail Page Styles */
+
 .activity-detail-table th {
   width: 120px;
   text-align: left;
@@ -350,7 +346,7 @@
   font-style: italic;
 }
 
-/* Screen preview styles */
+
 @media screen {
   .print-document {
     max-width: 100%;

@@ -12,7 +12,7 @@ import {
 import { FormFillerData, Activity } from "@/lib/types/form-filler";
 import { format, parseISO } from "date-fns";
 
-// Register Inter font for header/footer from local files
+
 Font.register({
   family: "Inter",
   fonts: [
@@ -36,7 +36,7 @@ Font.register({
   ],
 });
 
-// Register Arial font for header/footer from local files
+
 Font.register({
   family: "Arial",
   fonts: [
@@ -56,14 +56,14 @@ Font.register({
   ],
 });
 
-// Disable hyphenation globally
+
 Font.registerHyphenationCallback((word) => [word]);
 
-// Constants for pagination
-const INDEX_ROWS_PER_PAGE = 10;
-const EVALUATION_ROWS_PER_PAGE = 10;
 
-// PDF Styles - using Times-Roman for body, Inter for header/footer
+const INDEX_ROWS_PER_PAGE = 7;
+const EVALUATION_ROWS_PER_PAGE = 8;
+
+
 const styles = StyleSheet.create({
   page: {
     padding: 40,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#000",
   },
-  // Header styles
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     fontFamily: "Arial",
     lineHeight: 1.4,
   },
-  // Footer styles
+
   footer: {
     position: "absolute",
     bottom: 25,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     color: "#1e3a5f",
     fontFamily: "Arial",
   },
-  // Certificate styles
+
   certificateContent: {
     marginTop: 60,
     alignItems: "center",
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   signatureLabel: {
     fontSize: 10,
   },
-  // Section titles
+
   sectionTitle: {
     fontSize: 14,
     fontWeight: "bold",
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 11,
   },
-  // Table styles
+
   table: {
     width: "100%",
     borderWidth: 1,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 9,
   },
-  // Signature sections
+
   hodSignatureSection: {
     position: "absolute",
     bottom: 80,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
   },
-  // Activity detail
+
   activityTable: {
     width: "100%",
     borderWidth: 1,
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// Helper to format date range string
+
 const formatDateRange = (activity: Activity) => {
   if (!activity.startDate || !activity.endDate) return "";
   try {
@@ -338,7 +338,7 @@ const formatDateRange = (activity: Activity) => {
   }
 };
 
-// Helper function to chunk array
+
 function chunkArray<T>(array: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
@@ -347,7 +347,7 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return chunks.length > 0 ? chunks : [[]];
 }
 
-// Header Component
+
 const Header = () => (
   <View style={styles.header}>
     <View style={styles.logoSection}>
@@ -368,7 +368,7 @@ const Header = () => (
   </View>
 );
 
-// Footer Component
+
 const Footer = () => (
   <View style={styles.footer} fixed>
     <Text style={styles.trustName}>Rashtreeya Sikshana Samithi Trust®</Text>
@@ -387,7 +387,6 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
 
   return (
     <Document>
-      {/* Certificate Page - Portrait */}
       <Page size="A4" orientation="portrait" style={styles.pagePortrait}>
         <Header />
         <View style={styles.certificateContent}>
@@ -426,7 +425,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
         <Footer />
       </Page>
 
-      {/* Index Sheet Pages - Landscape */}
+
       {activityPages.map((pageActivities, pageIndex) => {
         const isFirstPage = pageIndex === 0;
         const isLastPage = pageIndex === activityPages.length - 1;
@@ -448,7 +447,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
             )}
 
             <View style={styles.table}>
-              {/* Header row - only on first page */}
+
               {isFirstPage && (
                 <View style={[styles.tableRow, styles.tableHeader]}>
                   <Text style={[styles.tableCell, { width: "5%" }]}>Sl. No</Text>
@@ -463,7 +462,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
                   <Text style={[styles.tableCellLast, { width: "8%" }]}>Signature of the counsellor</Text>
                 </View>
               )}
-              {/* Data rows */}
+
               {pageActivities.length > 0 ? (
                 pageActivities.map((activity, idx) => (
                   <View key={activity.id} style={styles.tableRow}>
@@ -504,7 +503,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
         );
       })}
 
-      {/* Evaluation Sheet Pages - Landscape */}
+
       {evaluationPages.map((pageEvaluations, pageIndex) => {
         const isFirstPage = pageIndex === 0;
         const isLastPage = pageIndex === evaluationPages.length - 1;
@@ -601,7 +600,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
         );
       })}
 
-      {/* Activity Detail Pages - Portrait */}
+
       {activities.map((activity, index) => (
         <Page key={activity.id} size="A4" orientation="portrait" style={styles.pagePortrait}>
           <View style={styles.activityTable}>

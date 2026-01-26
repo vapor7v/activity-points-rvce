@@ -26,7 +26,6 @@ import { FormSectionHeader } from "@/components/form-filler/form-section-header"
 import { StudentInfoForm } from "@/components/form-filler/student-info-form";
 import { SignatoriesForm } from "@/components/form-filler/signatories-form";
 
-// Dynamically import PDF components to avoid SSR issues
 const PDFPreview = dynamic(
   () => import("@/components/form-filler/pdf-preview").then((mod) => mod.PDFPreview),
   { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Loading PDF viewer...</div> }
@@ -53,7 +52,6 @@ export default function FormFillerPage() {
       },
     });
 
-  // State for manual preview
   const [previewData, setPreviewData] = useState<FormFillerData>({
     student: {
       name: "",
@@ -73,7 +71,6 @@ export default function FormFillerPage() {
 
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Calculate total points (keep live for UI feedback)
   const activities = watch("activities");
   const totalPoints = activities.reduce(
     (sum, act) => sum + (act.pointsEarned || 0),
@@ -83,13 +80,11 @@ export default function FormFillerPage() {
   const handleGeneratePreview = (data?: FormFillerData) => {
     const values = data || getValues();
     
-    // Save to local storage
     if (typeof window !== "undefined") {
         localStorage.setItem("aicte-form-data", JSON.stringify(values));
     }
 
-    // Recalculate total points from the current values to ensure accuracy
-    // (especially when loading from storage before render cycle updates)
+
     const currentTotalPoints = values.activities.reduce(
         (sum, act) => sum + (act.pointsEarned || 0),
         0
@@ -102,13 +97,12 @@ export default function FormFillerPage() {
       },
       activities: values.activities,
       evaluations: values.activities.map((act, idx) => {
-        // Format duration string: "DD-MM-YY to DD-MM-YY, X days"
         let durationStr = "";
         if (act.startDate && act.endDate) {
           try {
             const start = parseISO(act.startDate);
             const end = parseISO(act.endDate);
-            const days = differenceInDays(end, start) + 1; // inclusive
+            const days = differenceInDays(end, start) + 1;
             durationStr = `${format(start, "dd-MM-yy")} to ${format(
               end,
               "dd-MM-yy"
@@ -133,14 +127,12 @@ export default function FormFillerPage() {
     };
 
     setIsGenerating(true);
-    // Simulate a short delay to show the loading state
     setTimeout(() => {
         setPreviewData(newPreviewData);
         setIsGenerating(false);
     }, 600);
   };
 
-  // Load from local storage on mount
   useEffect(() => {
     const savedData = localStorage.getItem("aicte-form-data");
     if (savedData) {
@@ -161,7 +153,6 @@ export default function FormFillerPage() {
   return (
     <div className="h-[calc(100vh)]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Left Panel - Form */}
         <ResizablePanel defaultSize={40} minSize={30}>
           <ScrollArea className="h-full">
             <div className="p-6 space-y-6">
@@ -182,14 +173,12 @@ export default function FormFillerPage() {
                 </Button>
               </div>
 
-              {/* Student Information */}
               <StudentInfoForm 
                 register={register} 
                 setValue={setValue} 
                 totalPoints={totalPoints} 
               />
 
-              {/* Activities */}
               <div>
                 <FormSectionHeader title="Activity Details" />
                 <Card>
@@ -212,7 +201,6 @@ export default function FormFillerPage() {
 
         <ResizableHandle withHandle />
 
-        {/* Right Panel - PDF Preview */}
         <ResizablePanel defaultSize={60} minSize={40}>
           <div className="h-full">
             <PDFPreview data={previewData} />
