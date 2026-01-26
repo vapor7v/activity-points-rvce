@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, X } from "lucide-react";
 import {
   FormFillerData,
   Activity,
@@ -256,7 +256,9 @@ export function ActivityList({
                     placeholder="e.g. 50"
                   />
                 </div>
-                <div className="space-y-2">
+              </div>
+
+              <div className="space-y-2">
                   <Label>Points</Label>
                   <Input
                     type="number"
@@ -265,7 +267,6 @@ export function ActivityList({
                     })}
                     placeholder="10"
                   />
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -278,28 +279,10 @@ export function ActivityList({
 
               <div className="space-y-2">
                 <Label>AICTE Category</Label>
-                <Select
-                  onValueChange={(value) =>
-                    setValue(
-                      `activities.${editingIndex}.aicteMapping`,
-                      value
-                    )
-                  }
-                  defaultValue={getValues(
-                    `activities.${editingIndex}.aicteMapping`
-                  )}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AICTE_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  {...register(`activities.${editingIndex}.aicteMapping`)}
+                  placeholder="Enter AICTE Category"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -333,20 +316,25 @@ export function ActivityList({
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="cert-check"
-                  onCheckedChange={(checked) =>
+              <div className="space-y-2">
+                <Label>Certificate Available</Label>
+                <Select
+                  onValueChange={(value) =>
                     setValue(
                       `activities.${editingIndex}.certificateAttached`,
-                      !!checked
+                      value === "yes"
                     )
                   }
-                  defaultChecked={getValues(
-                   `activities.${editingIndex}.certificateAttached`
-                  )}
-                />
-                <Label htmlFor="cert-check">Certificate Available</Label>
+                  value={activities?.[editingIndex]?.certificateAttached ? "yes" : "no"}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -367,19 +355,48 @@ export function ActivityList({
 
                <div className="space-y-2">
                 <Label>Activity Photos</Label>
+                
+                {/* Photo Previews */}
+                {(activities?.[editingIndex]?.photos || []).length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {activities?.[editingIndex]?.photos?.map((photo, pIdx) => (
+                      <div key={pIdx} className="relative group border rounded-md overflow-hidden aspect-video bg-muted">
+                        <img 
+                          src={photo} 
+                          alt={`Photo ${pIdx + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
+                            const newPhotos = currentPhotos.filter((_, i) => i !== pIdx);
+                            setValue(`activities.${editingIndex}.photos`, newPhotos);
+                          }}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <Input
                   type="file"
                   accept="image/*"
                   multiple
+                  className="cursor-pointer"
                   onChange={async (e) => {
                     const files = Array.from(e.target.files || []);
                     if (files.length > 0) {
                       try {
                          const base64Files = await Promise.all(files.map(fileToBase64));
-                         // Append new photos to existing ones or replace? Let's append for now or just replace.
-                         // Replacing is safer to avoid state sync issues with file input.
-                         // But users might want to add more. Let's just replace the list for simplicity as inputs are hard to control.
-                         setValue(`activities.${editingIndex}.photos`, base64Files);
+                         const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
+                         setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...base64Files]);
+                         
+                         // Reset file input
+                         e.target.value = "";
                       } catch (err) {
                         console.error("Error converting files", err);
                       }
@@ -387,15 +404,37 @@ export function ActivityList({
                   }}
                 />
                  <div className="text-xs text-muted-foreground mt-1">
-                  {getValues(`activities.${editingIndex}.photos`)?.length || 0} photos attached
+                  {(activities?.[editingIndex]?.photos || []).length} photos attached
                 </div>
               </div>
 
                <div className="space-y-2">
                 <Label>Certificate Image</Label>
+                
+                {activities?.[editingIndex]?.certificateImage ? (
+                   <div className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted w-1/2 mb-2">
+                      <img 
+                        src={activities[editingIndex].certificateImage!} 
+                        alt="Certificate" 
+                        className="w-full h-full object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setValue(`activities.${editingIndex}.certificateImage`, "");
+                          setValue(`activities.${editingIndex}.certificateAttached`, false);
+                        }}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                   </div>
+                ) : null}
+
                 <Input
                   type="file"
                   accept="image/*"
+                  className="cursor-pointer"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
@@ -404,13 +443,16 @@ export function ActivityList({
                         setValue(`activities.${editingIndex}.certificateImage`, base64);
                         // Also auto-check the "Certificate Available" box
                         setValue(`activities.${editingIndex}.certificateAttached`, true);
+                        
+                        // Reset file input
+                        e.target.value = "";
                       } catch (err) {
                          console.error("Error converting file", err);
                       }
                     }
                   }}
                 />
-                 {getValues(`activities.${editingIndex}.certificateImage`) && (
+                 {activities?.[editingIndex]?.certificateImage && (
                     <div className="text-xs text-green-600 mt-1">Certificate attached</div>
                 )}
               </div>

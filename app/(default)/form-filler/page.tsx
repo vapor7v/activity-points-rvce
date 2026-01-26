@@ -15,7 +15,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Loader2 } from "lucide-react";
 import {
   FormFillerData,
 } from "@/lib/types/form-filler";
@@ -33,7 +33,7 @@ const PDFPreview = dynamic(
 );
 
 export default function FormFillerPage() {
-  const { register, control, watch, setValue, getValues } =
+  const { register, control, watch, setValue, getValues, reset } =
     useForm<FormFillerData>({
       defaultValues: {
         student: {
@@ -71,6 +71,8 @@ export default function FormFillerPage() {
     },
   });
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
   // Calculate total points (keep live for UI feedback)
   const activities = watch("activities");
   const totalPoints = activities.reduce(
@@ -78,13 +80,25 @@ export default function FormFillerPage() {
     0
   );
 
-  const handleGeneratePreview = () => {
-    const values = getValues();
+  const handleGeneratePreview = (data?: FormFillerData) => {
+    const values = data || getValues();
+    
+    // Save to local storage
+    if (typeof window !== "undefined") {
+        localStorage.setItem("aicte-form-data", JSON.stringify(values));
+    }
+
+    // Recalculate total points from the current values to ensure accuracy
+    // (especially when loading from storage before render cycle updates)
+    const currentTotalPoints = values.activities.reduce(
+        (sum, act) => sum + (act.pointsEarned || 0),
+        0
+    );
     
     const newPreviewData: FormFillerData = {
       student: {
         ...values.student,
-        totalPoints,
+        totalPoints: currentTotalPoints,
       },
       activities: values.activities,
       evaluations: values.activities.map((act, idx) => {
@@ -118,17 +132,34 @@ export default function FormFillerPage() {
       signatories: values.signatories,
     };
 
-    setPreviewData(newPreviewData);
+    setIsGenerating(true);
+    // Simulate a short delay to show the loading state
+    setTimeout(() => {
+        setPreviewData(newPreviewData);
+        setIsGenerating(false);
+    }, 600);
   };
 
-  // Generate initial preview on mount
+  // Load from local storage on mount
   useEffect(() => {
-    handleGeneratePreview();
+    const savedData = localStorage.getItem("aicte-form-data");
+    if (savedData) {
+        try {
+            const parsed = JSON.parse(savedData);
+            reset(parsed);
+            handleGeneratePreview(parsed);
+        } catch (e) {
+            console.error("Failed to load saved data", e);
+            handleGeneratePreview();
+        }
+    } else {
+        handleGeneratePreview();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="h-[calc(100vh-5rem)]">
+    <div className="h-[calc(100vh)]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Panel - Form */}
         <ResizablePanel defaultSize={40} minSize={30}>
@@ -136,9 +167,18 @@ export default function FormFillerPage() {
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">AICTE Activity Form</h1>
-                <Button onClick={handleGeneratePreview} size="sm" className="gap-2">
-                  <RefreshCw className="w-4 h-4" />
-                  Generate Preview
+                <Button 
+                    onClick={() => handleGeneratePreview()} 
+                    size="sm" 
+                    className="gap-2"
+                    disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {isGenerating ? "Generating..." : "Generate Preview"}
                 </Button>
               </div>
 

@@ -8,8 +8,8 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'AI SDK Template',
-  description: 'AI SDK Template',
+  title: 'Activity Points',
+  description: 'Activity Points',
 };
 
 export default function RootLayout({
