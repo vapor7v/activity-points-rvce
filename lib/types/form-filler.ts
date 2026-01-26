@@ -66,15 +66,21 @@ export const AICTE_CATEGORIES = [
 ] as const;
 
 export const DEPARTMENTS = [
+  "Artificial Intelligence & Machine Learning",
+  "Aerospace Engineering",
   "Computer Science & Engineering",
+  "Computer Science & Engineering - Data Science",
+  "Computer Science & Engineering - Cybersecurity",
   "Information Science & Engineering",
+  "Industrial Engineering and Management",
   "Electronics & Communication Engineering",
   "Electrical & Electronics Engineering",
+  "Electronics & Telecommunication Engineering",
+  "Electronics & Instrumentation Engineering",
   "Mechanical Engineering",
   "Civil Engineering",
   "Chemical Engineering",
   "Biotechnology",
-  "Artificial Intelligence & Machine Learning",
 ] as const;
 
 export const SEMESTERS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
