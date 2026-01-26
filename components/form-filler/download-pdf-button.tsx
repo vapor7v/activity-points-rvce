@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormFillerData } from "@/lib/types/form-filler";
 import { Download, Loader2 } from "lucide-react";
-import { pdf } from "@react-pdf/renderer";
-import { PDFDocumentTemplate } from "./pdf-document";
+import { wrap } from "comlink";
+import { type WorkerType } from "./pdf.worker";
 
 interface DownloadPDFButtonProps {
   data: FormFillerData;
@@ -15,11 +15,14 @@ export function DownloadPDFButton({ data }: DownloadPDFButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleDownload = async () => {
+    let worker: Worker | null = null;
     try {
       setIsGenerating(true);
       
-      const blob = await pdf(<PDFDocumentTemplate data={data} />).toBlob();
-      const url = URL.createObjectURL(blob);
+      worker = new Worker(new URL("./pdf.worker.ts", import.meta.url));
+      const service = wrap<WorkerType>(worker);
+      
+      const url = await service.renderPDF(data);
       
       const link = document.createElement('a');
       link.href = url;
@@ -28,12 +31,14 @@ export function DownloadPDFButton({ data }: DownloadPDFButtonProps) {
       link.click();
       
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert("Failed to generate PDF. Please try again.");
     } finally {
       setIsGenerating(false);
+      worker?.terminate();
     }
   };
 
