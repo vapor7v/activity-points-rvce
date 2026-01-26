@@ -287,7 +287,7 @@ export default function FormFillerPage() {
       {/* Desktop Layout */}
       <div className="hidden md:flex h-full"> 
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          <ResizablePanel defaultSize={40} minSize={30}>
+          <ResizablePanel defaultSize={40} minSize={0}>
             <ScrollArea className="h-full">
               <FormContent
                 form={form}
@@ -302,7 +302,7 @@ export default function FormFillerPage() {
 
           <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={60} minSize={40}>
+          <ResizablePanel defaultSize={60} minSize={0}>
             <div className="h-full">
               <PDFPreview data={previewData} />
             </div>
