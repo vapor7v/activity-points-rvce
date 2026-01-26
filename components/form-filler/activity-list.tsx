@@ -43,6 +43,7 @@ import {
 } from "@/lib/types/form-filler";
 import { nanoid } from "nanoid";
 import { differenceInDays, parseISO } from "date-fns";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -150,65 +151,130 @@ export function ActivityList({
         </Button>
       </div>
 
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">Sl.</TableHead>
-              <TableHead>Activity Name</TableHead>
-              <TableHead>Dates</TableHead>
-              <TableHead>Sem</TableHead>
-              <TableHead>Points</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fields.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                  No activities added. Click "Add Activity" to start.
-                </TableCell>
-              </TableRow>
-            ) : (
-              fields.map((field, index) => {
-                const activity = activities?.[index] || {};
-                const dateRange =
-                  activity.startDate && activity.endDate
-                    ? `${activity.startDate} to ${activity.endDate}`
-                    : "-";
+      {/* Mobile View - Cards */}
+      <div className="space-y-4 md:hidden">
+        {fields.length === 0 ? (
+          <div className="text-center p-6 text-muted-foreground border rounded-md border-dashed">
+            No activities added. Tap "Add Activity" to start.
+          </div>
+        ) : (
+          fields.map((field, index) => {
+            const activity = activities?.[index] || {};
+            const dateRange =
+              activity.startDate && activity.endDate
+                ? `${activity.startDate} to ${activity.endDate}`
+                : "-";
+            
+            return (
+              <Card key={field.id} className="overflow-hidden">
+                <CardHeader className="p-4 bg-muted/50 pb-2">
+                    <div className="flex justify-between items-start gap-2">
+                        <div className="font-semibold text-base line-clamp-2">
+                            {activity.name || "Untitled Activity"}
+                        </div>
+                        <div className="flex shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => editActivity(index)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => deleteActivity(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-2 text-sm space-y-1">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Semester:</span>
+                        <span>{activity.semester || "-"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Points:</span>
+                         <span className="font-medium">{activity.pointsEarned || 0}</span>
+                    </div>
+                     <div className="flex justify-between">
+                        <span className="text-muted-foreground">Dates:</span>
+                        <span>{dateRange}</span>
+                    </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </div>
 
-                return (
-                  <TableRow key={field.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-medium">
-                      {activity.name || "Untitled Activity"}
-                    </TableCell>
-                    <TableCell>{dateRange}</TableCell>
-                    <TableCell>{activity.semester || "-"}</TableCell>
-                    <TableCell>{activity.pointsEarned || 0}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => editActivity(index)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteActivity(index)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+      {/* Desktop View - Table */}
+      <div className="hidden md:block border rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">Sl.</TableHead>
+                <TableHead>Activity Name</TableHead>
+                <TableHead>Dates</TableHead>
+                <TableHead>Sem</TableHead>
+                <TableHead>Points</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fields.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center h-24 text-muted-foreground"
+                  >
+                    No activities added. Click "Add Activity" to start.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                fields.map((field, index) => {
+                  const activity = activities?.[index] || {};
+                  const dateRange =
+                    activity.startDate && activity.endDate
+                      ? `${activity.startDate} to ${activity.endDate}`
+                      : "-";
+
+                  return (
+                    <TableRow key={field.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell className="font-medium">
+                        {activity.name || "Untitled Activity"}
+                      </TableCell>
+                      <TableCell>{dateRange}</TableCell>
+                      <TableCell>{activity.semester || "-"}</TableCell>
+                      <TableCell>{activity.pointsEarned || 0}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => editActivity(index)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteActivity(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
