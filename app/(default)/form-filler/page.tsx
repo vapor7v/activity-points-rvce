@@ -15,7 +15,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { Plus, Trash2, RefreshCw, Loader2 } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Loader2, Github } from "lucide-react";
 import {
   FormFillerData,
 } from "@/lib/types/form-filler";
@@ -157,7 +157,18 @@ export default function FormFillerPage() {
           <ScrollArea className="h-full">
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">AICTE Activity Form</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">Activity Points</h1>
+                  <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => window.open("https://github.com/CubeStar1/aicte-activity-points", "_blank")}
+                  >
+                    <Github className="w-4 h-4" />
+                    Star
+                  </Button>
+                </div>
                 <Button 
                     onClick={() => handleGeneratePreview()} 
                     size="sm" 
