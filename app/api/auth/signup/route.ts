@@ -8,6 +8,7 @@ export async function POST(request: Request) {
 
 	const data = await request.json();
 	const supabase = supabaseAdmin();
+	const appName = process.env.NEXT_PUBLIC_APP_NAME!;
 
 	const res = await supabase.auth.admin.generateLink({
 		type: "signup",
@@ -17,9 +18,9 @@ export async function POST(request: Request) {
 
 	if (res.data.properties?.email_otp) {
 		const resendRes = await resend.emails.send({
-			from: `YOLO Object Detection <onboarding@${process.env.NEXT_PUBLIC_RESEND_DOMAIN}>`,
+			from: `${appName} <onboarding@${process.env.NEXT_PUBLIC_RESEND_DOMAIN}>`,
 			to: [data.email],
-			subject: "YOLO Object Detection - Verify Email",
+			subject: `${appName} - Verify Email`,
 			react: SupaAuthVerifyEmail({
 				verificationCode: res.data.properties?.email_otp,
 			}),
