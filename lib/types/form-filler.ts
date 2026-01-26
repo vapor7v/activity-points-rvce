@@ -24,6 +24,7 @@ export interface Activity {
   photos: string[]; // URLs or base64 strings
   outcomes: string;
   signatureOfCounsellor: string;
+  certificateImage?: string; // Base64 string for certificate
 }
 
 export interface EvaluationEntry {

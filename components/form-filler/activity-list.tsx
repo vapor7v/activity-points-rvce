@@ -45,6 +45,15 @@ import {
 import { nanoid } from "nanoid";
 import { differenceInDays, parseISO } from "date-fns";
 
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 interface ActivityListProps {
   control: Control<FormFillerData>;
   register: UseFormRegister<FormFillerData>;
@@ -62,6 +71,7 @@ const defaultActivity: Omit<Activity, "id" | "slNo"> = {
   place: "",
   detailedReportPageNo: "",
   certificateAttached: false,
+  certificateImage: "",
   hoursSpent: 0,
   pointsEarned: 0,
   description: "",
@@ -353,6 +363,56 @@ export function ActivityList({
                   {...register(`activities.${editingIndex}.outcomes`)}
                   placeholder="What did you learn?"
                 />
+              </div>
+
+               <div className="space-y-2">
+                <Label>Activity Photos</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) {
+                      try {
+                         const base64Files = await Promise.all(files.map(fileToBase64));
+                         // Append new photos to existing ones or replace? Let's append for now or just replace.
+                         // Replacing is safer to avoid state sync issues with file input.
+                         // But users might want to add more. Let's just replace the list for simplicity as inputs are hard to control.
+                         setValue(`activities.${editingIndex}.photos`, base64Files);
+                      } catch (err) {
+                        console.error("Error converting files", err);
+                      }
+                    }
+                  }}
+                />
+                 <div className="text-xs text-muted-foreground mt-1">
+                  {getValues(`activities.${editingIndex}.photos`)?.length || 0} photos attached
+                </div>
+              </div>
+
+               <div className="space-y-2">
+                <Label>Certificate Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const base64 = await fileToBase64(file);
+                        setValue(`activities.${editingIndex}.certificateImage`, base64);
+                        // Also auto-check the "Certificate Available" box
+                        setValue(`activities.${editingIndex}.certificateAttached`, true);
+                      } catch (err) {
+                         console.error("Error converting file", err);
+                      }
+                    }
+                  }}
+                />
+                 {getValues(`activities.${editingIndex}.certificateImage`) && (
+                    <div className="text-xs text-green-600 mt-1">Certificate attached</div>
+                )}
               </div>
               
               <div className="flex justify-end pt-4">

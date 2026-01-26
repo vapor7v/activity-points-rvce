@@ -56,6 +56,9 @@ Font.register({
   ],
 });
 
+// Disable hyphenation globally
+Font.registerHyphenationCallback((word) => [word]);
+
 // Constants for pagination
 const INDEX_ROWS_PER_PAGE = 10;
 const EVALUATION_ROWS_PER_PAGE = 10;
@@ -239,15 +242,21 @@ const styles = StyleSheet.create({
   },
   // Signature sections
   hodSignatureSection: {
+    position: "absolute",
+    bottom: 80,
+    left: 30,
+    right: 30,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 40,
     paddingHorizontal: 30,
   },
   evaluatorSignatureSection: {
+    position: "absolute",
+    bottom: 80,
+    left: 30,
+    right: 30,
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: 30,
   },
   // Activity detail
   activityTable: {
@@ -277,7 +286,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 8,
     fontSize: 10,
-    minHeight: 200,
   },
   photosCell: {
     flex: 1,
@@ -291,12 +299,29 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 8,
     fontSize: 10,
-    minHeight: 100,
   },
   certificateNote: {
     marginTop: 15,
     fontSize: 10,
     fontStyle: "italic",
+  },
+  photosContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 5,
+    justifyContent: "center",
+  },
+  photo: {
+    width: 150,
+    height: 100,
+    objectFit: "contain",
+  },
+  certificateImage: {
+    width: "100%",
+    height: 500,
+    objectFit: "contain",
+    marginTop: 20,
   },
 });
 
@@ -598,7 +623,17 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
             </View>
             <View style={styles.activityRow}>
               <Text style={styles.activityLabel}>Photos</Text>
-              <Text style={styles.photosCell}>[Attach photos here]</Text>
+              <View style={styles.photosCell}>
+                {activity.photos && activity.photos.length > 0 ? (
+                  <View style={styles.photosContainer}>
+                    {activity.photos.map((photo, idx) => (
+                      <Image key={idx} src={photo} style={styles.photo} />
+                    ))}
+                  </View>
+                ) : (
+                  <Text>[Attach photos here]</Text>
+                )}
+              </View>
             </View>
             <View style={styles.activityRow}>
               <Text style={styles.activityLabel}>Outcome</Text>
@@ -609,7 +644,9 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
               <Text style={styles.activityValue}>{activity.pointsEarned}</Text>
             </View>
           </View>
-          <Text style={styles.certificateNote}>&lt;attach certificate by taking from user&gt;</Text>
+          {activity.certificateAttached && activity.certificateImage && (
+            <Image src={activity.certificateImage} style={styles.certificateImage} />
+          )}
         </Page>
       ))}
     </Document>
