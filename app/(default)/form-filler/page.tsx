@@ -21,7 +21,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { Plus, Trash2, Printer } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   FormFillerData,
   Activity,
@@ -29,8 +29,14 @@ import {
   DEPARTMENTS,
   SEMESTERS,
 } from "@/lib/types/form-filler";
-import { PrintDocument } from "@/components/form-filler/print-document";
+import dynamic from "next/dynamic";
 import { nanoid } from "nanoid";
+
+// Dynamically import PDF components to avoid SSR issues
+const PDFPreview = dynamic(
+  () => import("@/components/form-filler/pdf-preview").then((mod) => mod.PDFPreview),
+  { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Loading PDF viewer...</div> }
+);
 
 const defaultActivity: Omit<Activity, "id" | "slNo"> = {
   semester: "",
@@ -105,12 +111,8 @@ export default function FormFillerPage() {
     });
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
-    <div className="h-[calc(100vh-60px)]">
+    <div className="h-[calc(100vh)]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Panel - Form */}
         <ResizablePanel defaultSize={40} minSize={30}>
@@ -118,10 +120,6 @@ export default function FormFillerPage() {
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">AICTE Activity Form</h1>
-                <Button onClick={handlePrint} size="sm" className="print:hidden">
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print PDF
-                </Button>
               </div>
 
               {/* Student Information */}
@@ -357,21 +355,11 @@ export default function FormFillerPage() {
 
         <ResizableHandle withHandle />
 
-        {/* Right Panel - Live Preview */}
+        {/* Right Panel - PDF Preview */}
         <ResizablePanel defaultSize={60} minSize={40}>
-          <ScrollArea className="h-full bg-gray-100">
-            <div className="p-4">
-              <div className="mb-4 flex items-center justify-between print:hidden">
-                <h2 className="text-lg font-semibold">Live Preview</h2>
-                <p className="text-sm text-muted-foreground">
-                  Changes update in real-time
-                </p>
-              </div>
-              <div className="transform scale-[0.7] origin-top-left w-[142%]">
-                <PrintDocument data={previewData} />
-              </div>
-            </div>
-          </ScrollArea>
+          <div className="h-full">
+            <PDFPreview data={previewData} />
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
