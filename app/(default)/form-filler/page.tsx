@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,37 +15,22 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, RefreshCw } from "lucide-react";
 import {
   FormFillerData,
-  Activity,
-  AICTE_CATEGORIES,
-  DEPARTMENTS,
-  SEMESTERS,
 } from "@/lib/types/form-filler";
 import dynamic from "next/dynamic";
-import { nanoid } from "nanoid";
+import { format, differenceInDays, parseISO } from "date-fns";
+import { ActivityList } from "@/components/form-filler/activity-list";
+import { FormSectionHeader } from "@/components/form-filler/form-section-header";
+import { StudentInfoForm } from "@/components/form-filler/student-info-form";
+import { SignatoriesForm } from "@/components/form-filler/signatories-form";
 
 // Dynamically import PDF components to avoid SSR issues
 const PDFPreview = dynamic(
   () => import("@/components/form-filler/pdf-preview").then((mod) => mod.PDFPreview),
   { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Loading PDF viewer...</div> }
 );
-
-const defaultActivity: Omit<Activity, "id" | "slNo"> = {
-  semester: "",
-  name: "",
-  aicteMapping: "",
-  dateAndDuration: "",
-  place: "",
-  detailedReportPageNo: "",
-  certificateAttached: false,
-  pointsEarned: 0,
-  description: "",
-  photos: [],
-  outcomes: "",
-  signatureOfCounsellor: "",
-};
 
 export default function FormFillerPage() {
   const { register, control, watch, setValue, getValues } =
@@ -66,53 +45,90 @@ export default function FormFillerPage() {
         },
         activities: [],
         evaluations: [],
+        signatories: {
+          evaluator1: { name: "", designation: "" },
+          evaluator2: { name: "", designation: "" },
+          counsellor: { name: "", designation: "" },
+        },
       },
     });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "activities",
+  // State for manual preview
+  const [previewData, setPreviewData] = useState<FormFillerData>({
+    student: {
+      name: "",
+      usn: "",
+      department: "",
+      period: "2022-2026",
+      totalPoints: 0,
+    },
+    activities: [],
+    evaluations: [],
+    signatories: {
+      evaluator1: { name: "", designation: "" },
+      evaluator2: { name: "", designation: "" },
+      counsellor: { name: "", designation: "" },
+    },
   });
 
-  // Watch all form values for live preview
-  const formValues = watch();
-
-  // Calculate total points
+  // Calculate total points (keep live for UI feedback)
   const activities = watch("activities");
   const totalPoints = activities.reduce(
     (sum, act) => sum + (act.pointsEarned || 0),
     0
   );
 
-  // Live preview data
-  const previewData: FormFillerData = {
-    student: {
-      ...formValues.student,
-      totalPoints,
-    },
-    activities: formValues.activities,
-    evaluations: formValues.activities.map((act, idx) => ({
-      slNo: idx + 1,
-      nameOfStudent: formValues.student.name,
-      usn: formValues.student.usn,
-      typeOfWork: act.name,
-      duration: act.dateAndDuration,
-      hoursSpent: 0,
-      certificateAvailable: act.certificateAttached,
-      pointsEarned: act.pointsEarned,
-    })),
+  const handleGeneratePreview = () => {
+    const values = getValues();
+    
+    const newPreviewData: FormFillerData = {
+      student: {
+        ...values.student,
+        totalPoints,
+      },
+      activities: values.activities,
+      evaluations: values.activities.map((act, idx) => {
+        // Format duration string: "DD-MM-YY to DD-MM-YY, X days"
+        let durationStr = "";
+        if (act.startDate && act.endDate) {
+          try {
+            const start = parseISO(act.startDate);
+            const end = parseISO(act.endDate);
+            const days = differenceInDays(end, start) + 1; // inclusive
+            durationStr = `${format(start, "dd-MM-yy")} to ${format(
+              end,
+              "dd-MM-yy"
+            )}, ${days} day${days > 1 ? "s" : ""}`;
+          } catch (e) {
+            console.error("Date parsing error", e);
+          }
+        }
+
+        return {
+          slNo: idx + 1,
+          nameOfStudent: values.student.name,
+          usn: values.student.usn,
+          typeOfWork: act.name,
+          duration: durationStr,
+          hoursSpent: act.hoursSpent,
+          certificateAvailable: act.certificateAttached,
+          pointsEarned: act.pointsEarned,
+        };
+      }),
+      signatories: values.signatories,
+    };
+
+    setPreviewData(newPreviewData);
   };
 
-  const addActivity = () => {
-    append({
-      ...defaultActivity,
-      id: nanoid(),
-      slNo: fields.length + 1,
-    });
-  };
+  // Generate initial preview on mount
+  useEffect(() => {
+    handleGeneratePreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="h-[calc(100vh)]">
+    <div className="h-[calc(100vh-5rem)]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Panel - Form */}
         <ResizablePanel defaultSize={40} minSize={30}>
@@ -120,235 +136,36 @@ export default function FormFillerPage() {
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">AICTE Activity Form</h1>
+                <Button onClick={handleGeneratePreview} size="sm" className="gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Generate Preview
+                </Button>
               </div>
 
               {/* Student Information */}
-              <Card>
-                <CardHeader className="py-4">
-                  <CardTitle className="text-lg">Student Information</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Student Name</Label>
-                    <Input
-                      id="name"
-                      {...register("student.name")}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="usn">USN</Label>
-                    <Input
-                      id="usn"
-                      {...register("student.usn")}
-                      placeholder="e.g., 1RV22CS001"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select
-                      onValueChange={(value) =>
-                        setValue("student.department", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DEPARTMENTS.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="period">Programme Period</Label>
-                    <Input
-                      id="period"
-                      {...register("student.period")}
-                      placeholder="e.g., 2022-2026"
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Total Points: {totalPoints}/100</Label>
-                    <div className="h-2 bg-gray-200 rounded-full">
-                      <div
-                        className="h-full bg-green-500 rounded-full transition-all"
-                        style={{ width: `${Math.min(totalPoints, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {totalPoints >= 100
-                        ? "✅ Required 100 points completed!"
-                        : `${100 - totalPoints} more points needed`}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <StudentInfoForm 
+                register={register} 
+                setValue={setValue} 
+                totalPoints={totalPoints} 
+              />
 
               {/* Activities */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between py-4">
-                  <CardTitle className="text-lg">
-                    Activities ({fields.length})
-                  </CardTitle>
-                  <Button type="button" onClick={addActivity} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {fields.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">
-                      No activities added. Click "Add" to start.
-                    </p>
-                  ) : (
-                    fields.map((field, index) => (
-                      <Card key={field.id} className="border">
-                        <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
-                          <CardTitle className="text-sm font-medium">
-                            Activity {index + 1}
-                          </CardTitle>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-2 gap-3 px-4 pb-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Semester</Label>
-                            <Select
-                              onValueChange={(value) =>
-                                setValue(`activities.${index}.semester`, value)
-                              }
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Select" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {SEMESTERS.map((sem) => (
-                                  <SelectItem key={sem} value={sem}>
-                                    Sem {sem}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+              <div>
+                <FormSectionHeader title="Activity Details" />
+                <Card>
+                  <CardContent className="pt-0">
+                    <ActivityList
+                      control={control}
+                      register={register}
+                      setValue={setValue}
+                      getValues={getValues}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-                          <div className="space-y-1">
-                            <Label className="text-xs">Points</Label>
-                            <Input
-                              type="number"
-                              className="h-8"
-                              {...register(`activities.${index}.pointsEarned`, {
-                                valueAsNumber: true,
-                              })}
-                              placeholder="10"
-                            />
-                          </div>
+              <SignatoriesForm register={register} />
 
-                          <div className="space-y-1 col-span-2">
-                            <Label className="text-xs">Activity Name</Label>
-                            <Input
-                              className="h-8"
-                              {...register(`activities.${index}.name`)}
-                              placeholder="e.g., Blood Donation Camp"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs">AICTE Category</Label>
-                            <Select
-                              onValueChange={(value) =>
-                                setValue(
-                                  `activities.${index}.aicteMapping`,
-                                  value
-                                )
-                              }
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Select" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {AICTE_CATEGORIES.map((cat) => (
-                                  <SelectItem key={cat} value={cat}>
-                                    {cat}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs">Date & Duration</Label>
-                            <Input
-                              className="h-8"
-                              {...register(
-                                `activities.${index}.dateAndDuration`
-                              )}
-                              placeholder="15-Jan-2024"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs">Place</Label>
-                            <Input
-                              className="h-8"
-                              {...register(`activities.${index}.place`)}
-                              placeholder="RVCE Campus"
-                            />
-                          </div>
-
-                          <div className="flex items-center space-x-2 pt-4">
-                            <Checkbox
-                              id={`cert-${index}`}
-                              onCheckedChange={(checked) =>
-                                setValue(
-                                  `activities.${index}.certificateAttached`,
-                                  !!checked
-                                )
-                              }
-                            />
-                            <Label htmlFor={`cert-${index}`} className="text-xs">
-                              Certificate
-                            </Label>
-                          </div>
-
-                          <div className="space-y-1 col-span-2">
-                            <Label className="text-xs">Description</Label>
-                            <Textarea
-                              {...register(`activities.${index}.description`)}
-                              placeholder="Describe the activity..."
-                              rows={2}
-                              className="text-sm"
-                            />
-                          </div>
-
-                          <div className="space-y-1 col-span-2">
-                            <Label className="text-xs">Outcomes</Label>
-                            <Textarea
-                              {...register(`activities.${index}.outcomes`)}
-                              placeholder="What did you learn?"
-                              rows={2}
-                              className="text-sm"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
             </div>
           </ScrollArea>
         </ResizablePanel>

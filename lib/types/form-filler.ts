@@ -12,10 +12,13 @@ export interface Activity {
   semester: string;
   name: string;
   aicteMapping: string; // Maps to AICTE activity category
-  dateAndDuration: string;
+  startDate: string;
+  endDate: string;
+  duration: number; // in days
   place: string;
   detailedReportPageNo: string;
   certificateAttached: boolean;
+  hoursSpent: number;
   pointsEarned: number;
   description: string;
   photos: string[]; // URLs or base64 strings
@@ -34,10 +37,20 @@ export interface EvaluationEntry {
   pointsEarned: number;
 }
 
+export interface Signatory {
+  name: string;
+  designation: string;
+}
+
 export interface FormFillerData {
   student: StudentInfo;
   activities: Activity[];
   evaluations: EvaluationEntry[];
+  signatories: {
+    evaluator1: Signatory;
+    evaluator2: Signatory;
+    counsellor: Signatory;
+  };
 }
 
 // AICTE Activity Categories for dropdown

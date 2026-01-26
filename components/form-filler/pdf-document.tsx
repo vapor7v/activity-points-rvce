@@ -9,7 +9,8 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
-import { FormFillerData } from "@/lib/types/form-filler";
+import { FormFillerData, Activity } from "@/lib/types/form-filler";
+import { format, parseISO } from "date-fns";
 
 // Register Inter font for header/footer from local files
 Font.register({
@@ -299,6 +300,19 @@ const styles = StyleSheet.create({
   },
 });
 
+// Helper to format date range string
+const formatDateRange = (activity: Activity) => {
+  if (!activity.startDate || !activity.endDate) return "";
+  try {
+    const start = format(parseISO(activity.startDate), "dd-MM-yy");
+    const end = format(parseISO(activity.endDate), "dd-MM-yy");
+    const days = activity.duration || 0;
+    return `${start} to ${end}, ${days} day${days > 1 ? "s" : ""}`;
+  } catch (e) {
+    return "";
+  }
+};
+
 // Helper function to chunk array
 function chunkArray<T>(array: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -401,8 +415,8 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
               <>
                 <Text style={styles.sectionTitle}>AICTE-Activity Book</Text>
                 <View style={styles.studentInfoLine}>
-                  <Text><Text style={{ fontWeight: "bold" }}>Name:</Text> &lt;{student.name || "student name"}&gt;</Text>
-                  <Text><Text style={{ fontWeight: "bold" }}>USN:</Text> &lt;{student.usn || "usn"}&gt;</Text>
+                  <Text><Text style={{ fontWeight: "bold" }}>Name:</Text> {student.name || "Student Name"}</Text>
+                  <Text><Text style={{ fontWeight: "bold" }}>USN:</Text> {student.usn || "USN"}</Text>
                 </View>
                 <Text style={styles.subsectionTitle}>Index sheet</Text>
               </>
@@ -432,7 +446,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
                     <Text style={[styles.tableCell, { width: "8%" }]}>{activity.semester}</Text>
                     <Text style={[styles.tableCell, { width: "18%" }]}>{activity.name}</Text>
                     <Text style={[styles.tableCell, { width: "12%" }]}>{activity.aicteMapping}</Text>
-                    <Text style={[styles.tableCell, { width: "12%" }]}>{activity.dateAndDuration}</Text>
+                    <Text style={[styles.tableCell, { width: "12%" }]}>{formatDateRange(activity)}</Text>
                     <Text style={[styles.tableCell, { width: "12%" }]}>{activity.place}</Text>
                     <Text style={[styles.tableCell, { width: "8%" }]}>{startIndex + idx + 1}</Text>
                     <Text style={[styles.tableCell, { width: "10%" }]}>{activity.certificateAttached ? "Y" : "N"}</Text>
@@ -519,20 +533,38 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
             {isLastPage && (
               <View style={styles.evaluatorSignatureSection}>
                 <View style={styles.signatureBlock}>
-                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>Name of Evaluator 1</Text>
-                  <Text style={{ marginBottom: 3 }}>Designation</Text>
+                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>
+                    {data.signatories?.evaluator1?.name ||
+                      "Name of Evaluator 1"}
+                  </Text>
+                  <Text style={{ marginBottom: 3 }}>
+                    {data.signatories?.evaluator1?.designation ||
+                      "Designation"}
+                  </Text>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureLabel}>Signature</Text>
                 </View>
                 <View style={styles.signatureBlock}>
-                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>Name of Evaluator 2</Text>
-                  <Text style={{ marginBottom: 3 }}>Designation</Text>
+                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>
+                    {data.signatories?.evaluator2?.name ||
+                      "Name of Evaluator 2"}
+                  </Text>
+                  <Text style={{ marginBottom: 3 }}>
+                    {data.signatories?.evaluator2?.designation ||
+                      "Designation"}
+                  </Text>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureLabel}>Signature</Text>
                 </View>
                 <View style={styles.signatureBlock}>
-                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>Name of Counsellor</Text>
-                  <Text style={{ marginBottom: 3 }}>Designation</Text>
+                  <Text style={{ fontWeight: "bold", marginBottom: 3 }}>
+                    {data.signatories?.counsellor?.name ||
+                      "Name of Counsellor"}
+                  </Text>
+                  <Text style={{ marginBottom: 3 }}>
+                    {data.signatories?.counsellor?.designation ||
+                      "Designation"}
+                  </Text>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureLabel}>Signature</Text>
                 </View>
@@ -554,7 +586,7 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
             </View>
             <View style={styles.activityRow}>
               <Text style={styles.activityLabel}>Date & Duration</Text>
-              <Text style={styles.activityValue}>{activity.dateAndDuration}</Text>
+              <Text style={styles.activityValue}>{formatDateRange(activity)}</Text>
             </View>
             <View style={styles.activityRow}>
               <Text style={styles.activityLabel}>Activity Name</Text>
