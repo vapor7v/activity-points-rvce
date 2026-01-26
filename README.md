@@ -1,4 +1,4 @@
-# AICTE Activity Points Form Filler
+# AICTE Activity Points Report Generator
 
 A tool for generating AICTE Activity Points forms for RVCE students
 
