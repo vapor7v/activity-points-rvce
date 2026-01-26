@@ -1,0 +1,380 @@
+/* Print Styles for AICTE Activity Book */
+
+/* Base print settings */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+}
+
+/* Page definitions */
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+@page portrait {
+  size: A4 portrait;
+}
+
+@page landscape {
+  size: A4 landscape;
+}
+
+/* Print Document Container */
+.print-document {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12pt;
+  color: #000;
+  background: white;
+}
+
+/* Page Base Styles */
+.page {
+  background: white;
+  padding: 20mm;
+  box-sizing: border-box;
+  position: relative;
+  page-break-after: always;
+  min-height: 100vh;
+}
+
+.page:last-child {
+  page-break-after: auto;
+}
+
+.page.portrait {
+  page: portrait;
+  width: 210mm;
+  min-height: 297mm;
+}
+
+.page.landscape {
+  page: landscape;
+  width: 297mm;
+  min-height: 210mm;
+}
+
+/* ============================================
+   HEADER STYLES - Matching exact RVCE template
+   ============================================ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #1e3a5f;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.page-header.compact {
+  justify-content: flex-end;
+  border-bottom: none;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.college-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.college-info h1 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20pt;
+  font-weight: bold;
+  color: #1e3a5f;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.college-info p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  margin: 2px 0;
+  color: #1e3a5f;
+}
+
+.contact-info,
+.contact-info-right {
+  text-align: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  color: #1e3a5f;
+}
+
+.contact-info p,
+.contact-info-right p {
+  margin: 2px 0;
+}
+
+/* ============================================
+   FOOTER STYLES - Matching exact RVCE template
+   ============================================ */
+.page-footer {
+  position: absolute;
+  bottom: 15mm;
+  left: 20mm;
+  right: 20mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #1e3a5f;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.trust-name {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  font-weight: bold;
+  font-style: normal;
+  color: #1e3a5f;
+}
+
+.motto {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  font-style: italic;
+  color: #1e3a5f;
+}
+
+/* Certificate Page Styles */
+.certificate-page .certificate-content {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.certificate-title {
+  font-size: 24pt;
+  font-weight: bold;
+  color: #1e3a5f;
+  text-decoration: underline;
+  margin-bottom: 40px;
+}
+
+.certificate-text {
+  font-size: 14pt;
+  line-height: 2;
+  text-align: justify;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.certificate-text .highlight {
+  font-weight: bold;
+}
+
+.signature-section {
+  position: absolute;
+  bottom: 80mm;
+  left: 20mm;
+  right: 20mm;
+}
+
+.signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.signature-block {
+  text-align: center;
+  width: 45%;
+}
+
+.signature-line {
+  border-bottom: 1px solid #000;
+  width: 200px;
+  margin: 0 auto 10px;
+  height: 40px;
+}
+
+/* Index Page Styles */
+.section-title {
+  text-align: center;
+  font-size: 16pt;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.subsection-title {
+  text-align: center;
+  font-size: 14pt;
+  margin-bottom: 15px;
+}
+
+.student-info-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 12pt;
+}
+
+.student-info-line .highlight {
+  color: #c41e3a;
+}
+
+/* Table Styles */
+.index-table,
+.evaluation-table,
+.activity-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+.index-table th,
+.index-table td,
+.evaluation-table th,
+.evaluation-table td,
+.activity-detail-table th,
+.activity-detail-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.index-table th,
+.evaluation-table th {
+  background-color: transparent;
+  font-weight: bold;
+  color: #000;
+}
+
+.index-table td,
+.evaluation-table td {
+  min-height: 30px;
+}
+
+.empty-row {
+  color: #999;
+  font-style: italic;
+}
+
+/* Index continuation */
+.index-continuation-content {
+  margin-top: 40px;
+}
+
+.hod-signature-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  padding: 0 40px;
+}
+
+/* Evaluator Signatures */
+.evaluator-signature-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding: 0 20px;
+}
+
+.evaluator-signature-section .signature-block {
+  width: 30%;
+}
+
+.evaluator-name {
+  color: #000;
+  font-weight: bold;
+}
+
+/* Activity Detail Page Styles */
+.activity-detail-table th {
+  width: 120px;
+  text-align: left;
+  vertical-align: top;
+  color: #000;
+  background: none;
+  font-weight: normal;
+}
+
+.activity-detail-table td {
+  text-align: left;
+}
+
+.description-cell {
+  min-height: 300px;
+  vertical-align: top;
+}
+
+.photos-cell {
+  min-height: 100px;
+  vertical-align: top;
+}
+
+.photos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.photos-grid img {
+  max-width: 150px;
+  max-height: 150px;
+  object-fit: cover;
+}
+
+.photo-placeholder {
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+}
+
+.outcome-cell {
+  min-height: 150px;
+  vertical-align: top;
+}
+
+.certificate-note {
+  margin-top: 20px;
+  color: #000;
+  font-style: italic;
+}
+
+/* Screen preview styles */
+@media screen {
+  .print-document {
+    max-width: 100%;
+    margin: 0 auto;
+    background: #f5f5f5;
+    padding: 20px;
+  }
+
+  .page {
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    border-radius: 4px;
+  }
+
+  .page.portrait {
+    max-width: 210mm;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page.landscape {
+    max-width: 297mm;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
