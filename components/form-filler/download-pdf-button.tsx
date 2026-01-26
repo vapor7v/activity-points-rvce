@@ -1,66 +1,57 @@
 "use client";
 
-import { useEffect, useState, useMemo, memo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormFillerData } from "@/lib/types/form-filler";
 import { Download, Loader2 } from "lucide-react";
+import { pdf } from "@react-pdf/renderer";
+import { PDFDocumentTemplate } from "./pdf-document";
 
 interface DownloadPDFButtonProps {
   data: FormFillerData;
 }
 
-export const DownloadPDFButton = memo(function DownloadPDFButton({ data }: DownloadPDFButtonProps) {
-  const [isClient, setIsClient] = useState(false);
-  const [DownloadLink, setDownloadLink] = useState<any>(null);
+export function DownloadPDFButton({ data }: DownloadPDFButtonProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    
-    const loadPDFModules = async () => {
-      try {
-        const { PDFDownloadLink } = await import("@react-pdf/renderer");
-        const { PDFDocumentTemplate } = await import("./pdf-document");
-        
-        const LinkComponent = ({ data }: { data: FormFillerData }) => {
-           const document = useMemo(() => <PDFDocumentTemplate data={data} />, [data]);
-           
-           return (
-            <PDFDownloadLink
-              document={document}
-              fileName={`activity_points_${data.student.usn || "form"}.pdf`}
-            >
-              {({ blob, url, loading, error }: any) => (
-                <Button disabled={loading} size="sm" variant="outline" className="gap-2">
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Download className="w-4 h-4" />
-                  )}
-                  <span className="hidden sm:inline">Download PDF</span>
-                  <span className="sr-only">Download</span>
-                </Button>
-              )}
-            </PDFDownloadLink>
-          );
-        };
-        
-        setDownloadLink(() => LinkComponent);
-      } catch (error) {
-        console.error("Error loading PDF modules:", error);
-      }
-    };
+  const handleDownload = async () => {
+    try {
+      setIsGenerating(true);
+      
+      const blob = await pdf(<PDFDocumentTemplate data={data} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `activity_points_${data.student.usn || "form"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-    loadPDFModules();
-  }, []);
-
-  if (!isClient || !DownloadLink) {
-    return (
-      <Button disabled size="sm" variant="outline" className="gap-2">
+  return (
+    <Button 
+      onClick={handleDownload}
+      disabled={isGenerating} 
+      size="sm" 
+      variant="outline" 
+      className="gap-2"
+    >
+      {isGenerating ? (
         <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="hidden sm:inline">Preparing...</span>
-      </Button>
-    );
-  }
-
-  return <DownloadLink data={data} />;
-});
+      ) : (
+        <Download className="w-4 h-4" />
+      )}
+      <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Download PDF"}</span>
+      <span className="sr-only">Download</span>
+    </Button>
+  );
+}

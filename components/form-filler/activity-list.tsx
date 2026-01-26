@@ -44,14 +44,29 @@ import {
 import { nanoid } from "nanoid";
 import { differenceInDays, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { createSupabaseBrowser } from "@/lib/supabase/client";
+import useUser from "@/hooks/use-user";
 
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+
+const uploadFile = async (file: File, userId: string) => {
+  const supabase = createSupabaseBrowser();
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${nanoid()}.${fileExt}`;
+  const filePath = `${userId}/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("activity-evidence")
+    .upload(filePath, file);
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage
+    .from("activity-evidence")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
 };
 
 interface ActivityListProps {
@@ -91,6 +106,8 @@ export function ActivityList({
     name: "activities",
   });
 
+
+  const { data: user } = useUser();
 
   const activities = useWatch({
     control,
@@ -455,15 +472,36 @@ export function ActivityList({
                   onChange={async (e) => {
                     const files = Array.from(e.target.files || []);
                     if (files.length > 0) {
+                      if (!user?.id) {
+                        alert("Please log in to upload images.");
+                        return;
+                      }
+
+                      const validFiles = files.filter(file => {
+                        if (file.size > 1024 * 1024) {
+                          alert(`File ${file.name} is too large. Max size is 1MB.`);
+                          return false;
+                        }
+                        return true;
+                      });
+
+                      if (validFiles.length === 0) return;
+
                       try {
-                         const base64Files = await Promise.all(files.map(fileToBase64));
+                         const uploadedUrls = await Promise.all(
+                           validFiles.map(async (file) => {
+                             return await uploadFile(file, user.id);
+                           })
+                         );
+                         
                          const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
-                         setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...base64Files]);
+                         setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...uploadedUrls]);
                          
 
                          e.target.value = "";
                       } catch (err) {
-                        console.error("Error converting files", err);
+                        console.error("Error uploading files", err);
+                        alert("Error uploading images. Please try again.");
                       }
                     }
                   }}
@@ -503,16 +541,27 @@ export function ActivityList({
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
+                      if (!user?.id) {
+                         alert("Please log in to upload certificate.");
+                         return;
+                      }
+                      
+                      if (file.size > 1024 * 1024) {
+                        alert(`File ${file.name} is too large. Max size is 1MB.`);
+                        return;
+                      }
+
                       try {
-                        const base64 = await fileToBase64(file);
-                        setValue(`activities.${editingIndex}.certificateImage`, base64);
+                        const url = await uploadFile(file, user.id);
+                        setValue(`activities.${editingIndex}.certificateImage`, url);
 
                         setValue(`activities.${editingIndex}.certificateAttached`, true);
                         
 
                         e.target.value = "";
                       } catch (err) {
-                         console.error("Error converting file", err);
+                         console.error("Error uploading file", err);
+                         alert("Error uploading certificate. Please try again.");
                       }
                     }
                   }}
