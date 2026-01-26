@@ -39,7 +39,6 @@ import { Plus, Trash2, Pencil, X } from "lucide-react";
 import {
   FormFillerData,
   Activity,
-  AICTE_CATEGORIES,
   SEMESTERS,
 } from "@/lib/types/form-filler";
 import { nanoid } from "nanoid";

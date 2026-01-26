@@ -2,7 +2,7 @@ export interface StudentInfo {
   name: string;
   usn: string;
   department: string;
-  period: string; // e.g., "2022-2026"
+  period: string;
   totalPoints: number;
 }
 
@@ -11,20 +11,20 @@ export interface Activity {
   slNo: number;
   semester: string;
   name: string;
-  aicteMapping: string; // Maps to AICTE activity category
+  aicteMapping: string;
   startDate: string;
   endDate: string;
-  duration: number; // in days
+  duration: number;
   place: string;
   detailedReportPageNo: string;
   certificateAttached: boolean;
   hoursSpent: number;
   pointsEarned: number;
   description: string;
-  photos: string[]; // URLs or base64 strings
+  photos: string[];
   outcomes: string;
   signatureOfCounsellor: string;
-  certificateImage?: string; // Base64 string for certificate
+  certificateImage?: string;
 }
 
 export interface EvaluationEntry {
@@ -54,16 +54,6 @@ export interface FormFillerData {
   };
 }
 
-// AICTE Activity Categories for dropdown
-export const AICTE_CATEGORIES = [
-  "NSS/NCC",
-  "Sports & Games",
-  "Cultural Activities",
-  "Technical Activities",
-  "Professional Self Initiatives",
-  "Entrepreneurship & Innovation",
-  "Leadership & Management",
-] as const;
 
 export const DEPARTMENTS = [
   "Artificial Intelligence & Machine Learning",
