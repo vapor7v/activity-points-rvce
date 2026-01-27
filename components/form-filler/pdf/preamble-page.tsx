@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 10,
     marginBottom: 5,
-    textAlign: "center",
+    textAlign: "left",
     fontFamily: "Times-Roman",
   },
   table: {
@@ -43,22 +43,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     minHeight: 25,
-    alignItems: "center",
+    alignItems: "stretch", 
   },
   lastTableRow: {
     flexDirection: "row",
     minHeight: 25,
-    alignItems: "center",
+    alignItems: "stretch",
   },
   tableHeader: {
-    padding: 5,
-    fontSize: 11,
+    padding: 2,
+    fontSize: 10, 
     fontFamily: "Times-Roman",
     textAlign: "center",
+    fontWeight: "bold",
   },
   tableCell: {
-    padding: 5,
-    fontSize: 11,
+    padding: 3,
+    fontSize: 10,
     fontFamily: "Times-Roman",
     textAlign: "left",
   },
@@ -66,7 +67,6 @@ const styles = StyleSheet.create({
     width: "10%",
     borderRightWidth: 1,
     borderRightColor: "#000",
-    height: "100%",
     textAlign: "center",
     justifyContent: "center",
   },
@@ -74,51 +74,97 @@ const styles = StyleSheet.create({
     width: "70%",
     borderRightWidth: 1,
     borderRightColor: "#000",
-    height: "100%",
-    textAlign: "left",
+    textAlign: "center",
+    justifyContent: "center",
   },
   col3: {
     width: "20%",
-    height: "100%",
+    textAlign: "center",
+    justifyContent: "center",
+  },
+  t2Col1: {
+    width: "8%",
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    textAlign: "center",
+    justifyContent: "center",
+  },
+  t2Col2: {
+    width: "52%",
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    justifyContent: "center",
+  },
+  t2Col34Group: {
+    width: "22%",
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    flexDirection: 'column',
+  },
+  t2Col3: {
+    width: "11%",
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    textAlign: "center",
+    justifyContent: "center",
+  },
+  t2Col4: {
+    width: "11%", 
+    borderRightWidth: 1,
+    borderRightColor: "#000",
+    textAlign: "center",
+    justifyContent: "center",
+  },
+  t2Col5: {
+    width: "18%",
     textAlign: "center",
     justifyContent: "center",
   },
   bulletPoint: {
     flexDirection: "row",
     marginBottom: 5,
+    paddingLeft: 10, 
+    paddingRight: 10,
   },
   bullet: {
-    width: 20,
-    fontSize: 11,
+    width: 15,
+    fontSize: 16,
     fontFamily: "Times-Roman",
     textAlign: "center",
+    marginTop: -2,
   },
   bulletText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: "Times-Roman",
     textAlign: "justify",
     lineHeight: 1.4,
-  },
-  note: {
-    fontSize: 11,
-    marginTop: 10,
-    textAlign: "justify",
-    fontFamily: "Times-Roman",
-    lineHeight: 1.4,
-  },
-  bold: {
-    fontWeight: "bold",
-    fontFamily: "Times-Roman",
   },
   footer: {
-    marginTop: 30,
-    fontSize: 11,
+    marginTop: 20,
+    fontSize: 10,
     fontFamily: "Times-Roman",
-    fontWeight: "bold",
-    fontStyle: "italic",
+    textAlign: 'left',
   },
 });
+
+const activities = [
+  "Helping local schools to achieve good result and enhance their enrolment in Higher/technical/ vocational education.",
+  "Preparing an actionable business proposal for enhancing the village income.",
+  "Developing Sustainable Water management system.",
+  "Tourism approaches through innovative approaches.",
+  "Promotion of appropriate technologies.",
+  "Reduction in energy consumption.",
+  "To skill rural population.",
+  "Facilitating 100% digitized money transactions.",
+  "Setting of the information imparting club for women leading to contribution in social and economic issues.",
+  "Developing and managing efficient garbage disposable system.",
+  "To assist the marketing of rural produce.",
+  "Food preservation/ packaging.",
+  "Automation of local activities.",
+  "Spreading public awareness under rural outreach program.",
+  "Contribution to any national level initiative of Government of India. For eg. Digital India, Skill India, Swachh Bharat Internship etc."
+];
 
 export const PreamblePage = () => {
   return (
@@ -139,55 +185,51 @@ export const PreamblePage = () => {
         <Text style={styles.tableCaption}>Table 1: Activity point requirement</Text>
 
         <View style={styles.table}>
-          {/* Header */}
           <View style={styles.tableRow}>
-            <View style={[styles.col1, { padding: 5 }]}>
+            <View style={styles.col1}>
                 <Text style={styles.tableHeader}>Sl.No.</Text>
             </View>
-            <View style={[styles.col2, { padding: 5, textAlign: "center" }]}>
+            <View style={styles.col2}>
                 <Text style={styles.tableHeader}>Student category</Text>
             </View>
-            <View style={[styles.col3, { padding: 5 }]}>
+            <View style={styles.col3}>
                 <Text style={styles.tableHeader}>Activity points prescribed by AICTE</Text>
             </View>
           </View>
 
-          {/* Row 1 */}
           <View style={styles.tableRow}>
-            <View style={[styles.col1]}>
+            <View style={styles.col1}>
                 <Text style={styles.tableCell}>1</Text>
             </View>
-            <View style={[styles.col2, { padding: 5 }]}>
+            <View style={[styles.col2, { alignItems: 'flex-start', paddingLeft: 5 }]}>
                 <Text style={styles.tableCell}>Day college regular student admitted to the 4 years Degree programme</Text>
             </View>
-            <View style={[styles.col3]}>
-                <Text style={[styles.tableCell, { textAlign: "center" }]}>100</Text>
+            <View style={styles.col3}>
+                <Text style={styles.tableCell}>100</Text>
             </View>
           </View>
 
-          {/* Row 2 */}
           <View style={styles.tableRow}>
-            <View style={[styles.col1]}>
+            <View style={styles.col1}>
                 <Text style={styles.tableCell}>2</Text>
             </View>
-            <View style={[styles.col2, { padding: 5 }]}>
+            <View style={[styles.col2, { alignItems: 'flex-start', paddingLeft: 5 }]}>
                 <Text style={styles.tableCell}>Student entering 4 years degree programme through lateral entry</Text>
             </View>
-            <View style={[styles.col3]}>
-                <Text style={[styles.tableCell, { textAlign: "center" }]}>75</Text>
+            <View style={styles.col3}>
+                <Text style={styles.tableCell}>75</Text>
             </View>
           </View>
 
-          {/* Row 3 */}
           <View style={styles.lastTableRow}>
-            <View style={[styles.col1]}>
+            <View style={styles.col1}>
                 <Text style={styles.tableCell}>3</Text>
             </View>
-            <View style={[styles.col2, { padding: 5 }]}>
+            <View style={[styles.col2, { alignItems: 'flex-start', paddingLeft: 5 }]}>
                 <Text style={styles.tableCell}>Students transferred from other Universities to fifth semester</Text>
             </View>
-            <View style={[styles.col3]}>
-                <Text style={[styles.tableCell, { textAlign: "center" }]}>50</Text>
+            <View style={styles.col3}>
+                <Text style={styles.tableCell}>50</Text>
             </View>
           </View>
         </View>
@@ -220,12 +262,60 @@ export const PreamblePage = () => {
             </Text>
         </View>
 
-        <Text style={styles.note}>
-          <Text style={{ fontStyle: "italic" }}>Note:</Text> A <Text style={{ fontWeight: "bold" }}>one-page report for every 5 activity points</Text> is <Text style={{ fontWeight: "bold" }}>mandatory</Text>.
-          Students must also attach <Text style={{ fontWeight: "bold" }}>valid certificates or duly authorized signed letters</Text> from NCC/NSS/Rotaract/CAT as proof. The <Text style={{ fontWeight: "bold" }}>authenticity and originality</Text> of these documents must be verified by the respective Faculty Counsellors.
-        </Text>
+        <Text style={[styles.tableCaption, { marginTop: 15 }]}>Table 2: Following suggestive activities may be carried out by students in teams as per their choice:</Text>
+        
+        <View style={styles.table}>
+            <View style={[styles.tableRow, { height: 40 }]}>
+                 <View style={styles.t2Col1}>
+                    <Text style={styles.tableHeader}>Sl. No</Text>
+                 </View>
+                 <View style={styles.t2Col2}>
+                    <Text style={styles.tableHeader}>Activity Head</Text>
+                 </View>
+                 
+                 <View style={styles.t2Col34Group}>
+                     <View style={{ borderBottomWidth: 1, borderBottomColor: '#000', height: '50%', justifyContent: 'center' }}>
+                         <Text style={styles.tableHeader}>Minimum duration</Text>
+                     </View>
+                     <View style={{ flexDirection: 'row', height: '50%' }}>
+                         <View style={{ width: '50%', borderRightWidth: 1, borderRightColor: '#000', justifyContent: 'center' }}>
+                             <Text style={styles.tableHeader}>Weeks</Text>
+                         </View>
+                         <View style={{ width: '50%', justifyContent: 'center' }}>
+                             <Text style={styles.tableHeader}>Hours</Text>
+                         </View>
+                     </View>
+                 </View>
 
-        <Text style={styles.footer}>From: Dean Student Affairs, RVCE</Text>
+                 <View style={styles.t2Col5}>
+                    <Text style={styles.tableHeader}>Performance appraisal/Maximum points/activity</Text>
+                 </View>
+            </View>
+
+            {activities.map((activity, index) => (
+                <View style={index === activities.length - 1 ? styles.lastTableRow : styles.tableRow} key={index}>
+                    <View style={styles.t2Col1}>
+                        <Text style={styles.tableCell}>{index + 1}.</Text>
+                    </View>
+                    <View style={[styles.t2Col2, { padding: 4 }]}>
+                        <Text style={styles.tableCell}>{activity}</Text>
+                    </View>
+                     <View style={styles.t2Col3}>
+                        <Text style={styles.tableCell}>2</Text>
+                     </View>
+                     <View style={styles.t2Col4}>
+                        <Text style={styles.tableCell}>80-90</Text>
+                     </View>
+                    <View style={styles.t2Col5}>
+                        <Text style={styles.tableCell}>20</Text>
+                    </View>
+                </View>
+            ))}
+        </View>
+
+        <Text style={styles.footer}>
+            Evaluated by NSS/youth Red cross Co-ordinators/Chair person-CICC(College Internal complaints committee)/SAGY(Sansad Adarsh Gram yojana, Govt. of India) of the institute/ Mentor
+        </Text>
     </Page>
   );
 };
