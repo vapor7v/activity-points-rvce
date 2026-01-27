@@ -278,7 +278,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 8,
     fontSize: 10,
-    textAlign: "center",
+    textAlign: "left",
   },
   photosCell: {
     flex: 1,
@@ -293,7 +293,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 8,
     fontSize: 10,
-    textAlign: "center",
+    textAlign: "left",
   },
   certificateNote: {
     marginTop: 15,
