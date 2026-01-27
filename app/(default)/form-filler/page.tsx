@@ -10,6 +10,8 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import { RefreshCw, Loader2, Github, Eye } from "lucide-react";
+
 import {
   Sheet,
   SheetContent,
@@ -17,7 +19,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { RefreshCw, Loader2, Github, Eye } from "lucide-react";
 import { FormFillerData } from "@/lib/types/form-filler";
 import dynamic from "next/dynamic";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -25,6 +26,7 @@ import { ActivityList } from "@/components/form-filler/activity-list";
 import { FormSectionHeader } from "@/components/form-filler/form-section-header";
 import { StudentInfoForm } from "@/components/form-filler/student-info-form";
 import { SignatoriesForm } from "@/components/form-filler/signatories-form";
+import { GuideDialog } from "@/components/form-filler/guide-dialog";
 
 import { DownloadPDFButton } from "@/components/form-filler/download-pdf-button";
 
@@ -64,11 +66,11 @@ const FormContent = ({
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="hidden md:block text-2xl font-bold">Activity Points</h1>
+          <GuideDialog />
+
           <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
+            variant="ghost"
+            size="icon"
             onClick={() =>
               window.open(
                 "https://github.com/CubeStar1/aicte-activity-points",
@@ -76,30 +78,29 @@ const FormContent = ({
               )
             }
           >
-            <Github className="w-4 h-4" />
-            <span className="hidden sm:inline">Star</span>
+            <Github className="w-5 h-5" />
           </Button>
         </div>
         <div className="flex items-center gap-2">
-            <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <Eye className="w-4 h-4" />
-                    <span>Preview</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh] p-0">
-                  <SheetHeader className="p-4 border-b">
-                    <SheetTitle>PDF Preview</SheetTitle>
-                  </SheetHeader>
-                  <div className="h-full bg-muted/50 p-4 overflow-hidden">
-                      {pdfContent}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-            
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Eye className="w-4 h-4" />
+                  <span>Preview</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[90vh] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>PDF Preview</SheetTitle>
+                </SheetHeader>
+                <div className="h-full bg-muted/50 p-4 overflow-hidden">
+                  {pdfContent}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
           <DownloadPDFButton data={previewData} />
 
           <Button
@@ -113,7 +114,9 @@ const FormContent = ({
             ) : (
               <RefreshCw className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate Preview"}</span>
+            <span className="hidden sm:inline">
+              {isGenerating ? "Generating..." : "Generate Preview"}
+            </span>
             <span className="sr-only">{isGenerating ? "..." : "Generate"}</span>
           </Button>
         </div>

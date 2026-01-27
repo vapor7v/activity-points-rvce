@@ -399,6 +399,14 @@ export function ActivityList({
               </div>
 
               <div className="space-y-2">
+                <Label>Detailed Report Page No</Label>
+                <Input
+                  {...register(`activities.${editingIndex}.detailedReportPageNo`)}
+                  placeholder="e.g. 1-2"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label>Certificate Available</Label>
                 <Select
                   onValueChange={(value) =>
