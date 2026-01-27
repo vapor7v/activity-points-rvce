@@ -6,6 +6,7 @@ import { CertificatePage } from "./pdf/certificate-page";
 import { IndexPages } from "./pdf/index-page";
 import { EvaluationPages } from "./pdf/evaluation-page";
 import { ActivityPages } from "./pdf/activity-page";
+import { PreamblePage } from "./pdf/preamble-page";
 import { chunkArray } from "./pdf/utils";
 import { INDEX_ROWS_PER_PAGE, EVALUATION_ROWS_PER_PAGE } from "./pdf/styles";
 
@@ -36,6 +37,8 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
         department={student.department} 
         startPageOffset={startPageOffset} 
       />
+
+      <PreamblePage />
     </Document>
   );
 };
