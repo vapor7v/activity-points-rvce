@@ -58,7 +58,7 @@ export const ActivityPages = ({
           <Text style={styles.activityLabel}>Outcome</Text>
           <Text style={styles.outcomeCell}>{activity.outcomes}</Text>
         </View>
-        <View style={[styles.activityRow, { borderBottomWidth: 0 }]}>
+        <View style={styles.activityRow}>
           <Text style={styles.activityLabel}>Points earned</Text>
           <Text style={styles.activityValue}>{activity.pointsEarned}</Text>
         </View>

@@ -33,7 +33,7 @@ export const Footer = () => (
 );
 
 export const ActivityHeader = () => (
-  <View style={styles.activityHeader}>
+  <View style={styles.activityHeader} fixed>
     <Text style={{ textAlign: "center", width: "100%" }}>
       RV College of Engineering® Bengaluru
     </Text>
