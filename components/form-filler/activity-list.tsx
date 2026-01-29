@@ -10,6 +10,23 @@ import {
   useWatch,
 } from "react-hook-form";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   Table,
   TableBody,
   TableCell,
@@ -35,7 +52,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, X } from "lucide-react";
+import { Plus, Trash2, Pencil, X, GripVertical, Table2 } from "lucide-react";
 import {
   FormFillerData,
   Activity,
@@ -46,6 +63,8 @@ import { differenceInDays, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 import useUser from "@/hooks/use-user";
+import { BulkEditDialog } from "./bulk-edit-dialog";
+import { SortableTableRow } from "./sortable-row";
 
 
 const uploadFile = async (file: File, userId: string) => {
@@ -116,6 +135,43 @@ export function ActivityList({
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = fields.findIndex((field) => field.id === active.id);
+      const newIndex = fields.findIndex((field) => field.id === over.id);
+
+      const currentActivities = getValues("activities");
+      const reorderedActivities = arrayMove(currentActivities, oldIndex, newIndex);
+
+      // Update slNo for all activities
+      const updatedActivities = reorderedActivities.map((act, idx) => ({
+        ...act,
+        slNo: idx + 1,
+      }));
+
+      setValue("activities", updatedActivities);
+    }
+  };
+
+  const handleBulkEdit = (updates: Partial<Activity>[]) => {
+    const currentActivities = getValues("activities");
+    const updatedActivities = currentActivities.map((activity, index) => ({
+      ...activity,
+      ...updates[index],
+    }));
+    setValue("activities", updatedActivities);
+  };
 
   const addActivity = () => {
     append({
@@ -162,10 +218,22 @@ export function ActivityList({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Activities ({fields.length})</h2>
-        <Button type="button" onClick={addActivity} size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Activity
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            onClick={() => setBulkEditOpen(true)}
+            size="sm"
+            variant="outline"
+            disabled={fields.length === 0}
+          >
+            <Table2 className="w-4 h-4 mr-2" />
+            Bulk Edit
+          </Button>
+          <Button type="button" onClick={addActivity} size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Activity
+          </Button>
+        </div>
       </div>
 
       {/* Mobile View - Cards */}
@@ -181,47 +249,47 @@ export function ActivityList({
               activity.startDate && activity.endDate
                 ? `${activity.startDate} to ${activity.endDate}`
                 : "-";
-            
+
             return (
               <Card key={field.id} className="overflow-hidden">
                 <CardHeader className="p-4 bg-muted/50 pb-2">
-                    <div className="flex justify-between items-start gap-2">
-                        <div className="font-semibold text-base line-clamp-2">
-                            {activity.name || "Untitled Activity"}
-                        </div>
-                        <div className="flex shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => editActivity(index)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => deleteActivity(index)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                        </div>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="font-semibold text-base line-clamp-2">
+                      {activity.name || "Untitled Activity"}
                     </div>
+                    <div className="flex shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => editActivity(index)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => deleteActivity(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-2 text-sm space-y-1">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Semester:</span>
-                        <span>{activity.semester || "-"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Points:</span>
-                         <span className="font-medium">{activity.pointsEarned || 0}</span>
-                    </div>
-                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dates:</span>
-                        <span>{dateRange}</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Semester:</span>
+                    <span>{activity.semester || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Points:</span>
+                    <span className="font-medium">{activity.pointsEarned || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Dates:</span>
+                    <span>{dateRange}</span>
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -230,11 +298,16 @@ export function ActivityList({
       </div>
 
       {/* Desktop View - Table */}
-      <div className="hidden md:block border rounded-md">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="hidden md:block border rounded-md">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">Sl.</TableHead>
+                <TableHead className="w-[100px]">Sl.</TableHead>
                 <TableHead>Activity Name</TableHead>
                 <TableHead>Dates</TableHead>
                 <TableHead>Sem</TableHead>
@@ -253,46 +326,42 @@ export function ActivityList({
                   </TableCell>
                 </TableRow>
               ) : (
-                fields.map((field, index) => {
-                  const activity = activities?.[index] || {};
-                  const dateRange =
-                    activity.startDate && activity.endDate
-                      ? `${activity.startDate} to ${activity.endDate}`
-                      : "-";
+                <SortableContext
+                  items={fields.map((f) => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {fields.map((field, index) => {
+                    const activity = activities?.[index] || {};
+                    const dateRange =
+                      activity.startDate && activity.endDate
+                        ? `${activity.startDate} to ${activity.endDate}`
+                        : "-";
 
-                  return (
-                    <TableRow key={field.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell className="font-medium">
-                        {activity.name || "Untitled Activity"}
-                      </TableCell>
-                      <TableCell>{dateRange}</TableCell>
-                      <TableCell>{activity.semester || "-"}</TableCell>
-                      <TableCell>{activity.pointsEarned || 0}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => editActivity(index)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteActivity(index)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                    return (
+                      <SortableTableRow
+                        key={field.id}
+                        id={field.id}
+                        index={index}
+                        activity={activity}
+                        dateRange={dateRange}
+                        onEdit={() => editActivity(index)}
+                        onDelete={() => deleteActivity(index)}
+                      />
+                    );
+                  })}
+                </SortableContext>
               )}
             </TableBody>
           </Table>
-      </div>
+        </div>
+      </DndContext>
+
+      <BulkEditDialog
+        open={bulkEditOpen}
+        onOpenChange={setBulkEditOpen}
+        activities={activities || []}
+        onApplyChanges={handleBulkEdit}
+      />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -341,14 +410,14 @@ export function ActivityList({
               </div>
 
               <div className="space-y-2">
-                  <Label>Points</Label>
-                  <Input
-                    type="number"
-                    {...register(`activities.${editingIndex}.pointsEarned`, {
-                      valueAsNumber: true,
-                    })}
-                    placeholder="10"
-                  />
+                <Label>Points</Label>
+                <Input
+                  type="number"
+                  {...register(`activities.${editingIndex}.pointsEarned`, {
+                    valueAsNumber: true,
+                  })}
+                  placeholder="10"
+                />
               </div>
 
               <div className="space-y-2">
@@ -443,17 +512,17 @@ export function ActivityList({
                 />
               </div>
 
-               <div className="space-y-2">
+              <div className="space-y-2">
                 <Label>Activity Photos</Label>
-                
+
 
                 {(activities?.[editingIndex]?.photos || []).length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {activities?.[editingIndex]?.photos?.map((photo, pIdx) => (
                       <div key={pIdx} className="relative group border rounded-md overflow-hidden aspect-video bg-muted">
-                        <img 
-                          src={photo} 
-                          alt={`Photo ${pIdx + 1}`} 
+                        <img
+                          src={photo}
+                          alt={`Photo ${pIdx + 1}`}
                           className="w-full h-full object-cover"
                         />
                         <button
@@ -496,17 +565,17 @@ export function ActivityList({
                       if (validFiles.length === 0) return;
 
                       try {
-                         const uploadedUrls = await Promise.all(
-                           validFiles.map(async (file) => {
-                             return await uploadFile(file, user.id);
-                           })
-                         );
-                         
-                         const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
-                         setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...uploadedUrls]);
-                         
+                        const uploadedUrls = await Promise.all(
+                          validFiles.map(async (file) => {
+                            return await uploadFile(file, user.id);
+                          })
+                        );
 
-                         e.target.value = "";
+                        const currentPhotos = getValues(`activities.${editingIndex}.photos`) || [];
+                        setValue(`activities.${editingIndex}.photos`, [...currentPhotos, ...uploadedUrls]);
+
+
+                        e.target.value = "";
                       } catch (err) {
                         console.error("Error uploading files", err);
                         alert("Error uploading images. Please try again.");
@@ -514,32 +583,32 @@ export function ActivityList({
                     }
                   }}
                 />
-                 <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {(activities?.[editingIndex]?.photos || []).length} photos attached
                 </div>
               </div>
 
-               <div className="space-y-2">
+              <div className="space-y-2">
                 <Label>Certificate Image</Label>
-                
+
                 {activities?.[editingIndex]?.certificateImage ? (
-                   <div className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted w-1/2 mb-2">
-                      <img 
-                        src={activities[editingIndex].certificateImage!} 
-                        alt="Certificate" 
-                        className="w-full h-full object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setValue(`activities.${editingIndex}.certificateImage`, "");
-                          setValue(`activities.${editingIndex}.certificateAttached`, false);
-                        }}
-                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                   </div>
+                  <div className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted w-1/2 mb-2">
+                    <img
+                      src={activities[editingIndex].certificateImage!}
+                      alt="Certificate"
+                      className="w-full h-full object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue(`activities.${editingIndex}.certificateImage`, "");
+                        setValue(`activities.${editingIndex}.certificateAttached`, false);
+                      }}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 ) : null}
 
                 <Input
@@ -550,10 +619,10 @@ export function ActivityList({
                     const file = e.target.files?.[0];
                     if (file) {
                       if (!user?.id) {
-                         alert("Please log in to upload certificate.");
-                         return;
+                        alert("Please log in to upload certificate.");
+                        return;
                       }
-                      
+
                       if (file.size > 1024 * 1024) {
                         alert(`File ${file.name} is too large. Max size is 1MB.`);
                         return;
@@ -564,23 +633,23 @@ export function ActivityList({
                         setValue(`activities.${editingIndex}.certificateImage`, url);
 
                         setValue(`activities.${editingIndex}.certificateAttached`, true);
-                        
+
 
                         e.target.value = "";
                       } catch (err) {
-                         console.error("Error uploading file", err);
-                         alert("Error uploading certificate. Please try again.");
+                        console.error("Error uploading file", err);
+                        alert("Error uploading certificate. Please try again.");
                       }
                     }
                   }}
                 />
-                 {activities?.[editingIndex]?.certificateImage && (
-                    <div className="text-xs text-green-600 mt-1">Certificate attached</div>
+                {activities?.[editingIndex]?.certificateImage && (
+                  <div className="text-xs text-green-600 mt-1">Certificate attached</div>
                 )}
               </div>
-              
+
               <div className="flex justify-end pt-4">
-                 <Button onClick={() => setIsDialogOpen(false)}>Done</Button>
+                <Button onClick={() => setIsDialogOpen(false)}>Done</Button>
               </div>
             </div>
           )}
