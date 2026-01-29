@@ -74,3 +74,21 @@ export const DEPARTMENTS = [
 ] as const;
 
 export const SEMESTERS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+
+export const AICTE_CATEGORIES = [
+  "Helping local schools to achieve good result and enhance their enrolment in Higher technical/vocational education",
+  "Preparing an actionable business proposal for enhancing the village income",
+  "Developing Sustainable Water management system",
+  "Tourism approaches through innovative approaches",
+  "Promotion of appropriate technologies",
+  "Reduction in energy consumption",
+  "To skill rural population",
+  "Facilitating 100% digitized money transactions",
+  "Setting of the information imparting club for women leading to contributing in social and economic issues",
+  "Developing and managing efficient garbage disposable system",
+  "To assist the marketing of rural produce",
+  "Food preservation/packaging",
+  "Automation of local activities",
+  "Spreading public awareness under rural outreach program",
+  "Contribution to any national level initiative of Government of India. For eg. Digital India, Skill India, Swachh Bharat Internship etc",
+] as const;
