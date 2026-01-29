@@ -43,7 +43,8 @@ export function BulkEditDialog({
   const handleApply = () => {
     const updates: Partial<Activity>[] = activities.map((activity) => {
       const value = editedValues[activity.id];
-      if (value === undefined || value === "") return {};
+      // Skip update if no value is set (keep current)
+      if (value === undefined || value === "" || value === "__keep_current__") return {};
 
       switch (selectedColumn) {
         case "hours":
@@ -140,7 +141,7 @@ export function BulkEditDialog({
                     <div>
                       {selectedColumn === "semester" ? (
                         <Select
-                          value={editedValues[activity.id]?.toString() || ""}
+                          value={editedValues[activity.id]?.toString()}
                           onValueChange={(value) =>
                             setEditedValues((prev) => ({
                               ...prev,
@@ -152,7 +153,6 @@ export function BulkEditDialog({
                             <SelectValue placeholder="Keep current" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Keep current</SelectItem>
                             {SEMESTERS.map((sem) => (
                               <SelectItem key={sem} value={sem}>
                                 Sem {sem}
@@ -162,7 +162,7 @@ export function BulkEditDialog({
                         </Select>
                       ) : selectedColumn === "aicteMapping" ? (
                         <Select
-                          value={editedValues[activity.id]?.toString() || ""}
+                          value={editedValues[activity.id]?.toString()}
                           onValueChange={(value) =>
                             setEditedValues((prev) => ({
                               ...prev,
@@ -174,7 +174,6 @@ export function BulkEditDialog({
                             <SelectValue placeholder="Keep current" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[300px]">
-                            <SelectItem value="">Keep current</SelectItem>
                             {AICTE_CATEGORIES.map((category, idx) => (
                               <SelectItem key={idx} value={category}>
                                 <div className="flex items-start gap-2">
