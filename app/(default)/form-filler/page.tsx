@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,9 @@ import { SignatoriesForm } from "@/components/form-filler/signatories-form";
 import { GuideDialog } from "@/components/form-filler/guide-dialog";
 
 import { DownloadPDFButton } from "@/components/form-filler/download-pdf-button";
+import { loadFormData, saveFormData, migrateLocalStorageData, createDebouncedSave } from "@/lib/supabase/form-persistence";
+import useUser from "@/hooks/use-user";
+import { toast } from "sonner";
 
 const PDFPreview = dynamic(
   () =>
@@ -149,6 +152,8 @@ const FormContent = ({
 
 export default function FormFillerPage() {
   const [mounted, setMounted] = useState(false);
+  const { data: user } = useUser();
+  const debouncedSaveRef = useRef(createDebouncedSave(30000)); // 30 seconds
 
   const form = useForm<FormFillerData>({
     defaultValues: {
@@ -196,11 +201,17 @@ export default function FormFillerPage() {
     0
   );
 
-  const handleGeneratePreview = (data?: FormFillerData) => {
+  const handleGeneratePreview = useCallback((data?: FormFillerData) => {
     const values = data || getValues();
 
+    // Save to localStorage as backup
     if (typeof window !== "undefined") {
       localStorage.setItem("aicte-form-data", JSON.stringify(values));
+    }
+
+    // Auto-save to database if user is authenticated
+    if (user) {
+      debouncedSaveRef.current(values);
     }
 
     const currentTotalPoints = values.activities.reduce(
@@ -249,25 +260,85 @@ export default function FormFillerPage() {
       setPreviewData(newPreviewData);
       setIsGenerating(false);
     }, 600);
-  };
+  }, [getValues, user]);
 
+  // Watch all form changes for auto-save
   useEffect(() => {
-    const savedData = localStorage.getItem("aicte-form-data");
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        reset(parsed);
-        handleGeneratePreview(parsed);
-      } catch (e) {
-        console.error("Failed to load saved data", e);
-        handleGeneratePreview();
+    if (!mounted) return;
+    const subscription = watch(() => {
+      const values = getValues();
+      handleGeneratePreview(values);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, mounted, getValues, handleGeneratePreview]);
+
+  // Load data from database or localStorage on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        // Try to migrate localStorage data first
+        await migrateLocalStorageData();
+
+        // Load from database
+        const { data: dbData, error } = await loadFormData();
+        if (dbData) {
+          reset(dbData);
+          handleGeneratePreview(dbData);
+          toast.success("Form loaded from cloud");
+        } else if (error) {
+          console.error("Error loading from database:", error);
+          // Fallback to localStorage
+          const savedData = localStorage.getItem("aicte-form-data");
+          if (savedData) {
+            try {
+              const parsed = JSON.parse(savedData);
+              reset(parsed);
+              handleGeneratePreview(parsed);
+              toast.info("Loaded from local storage");
+            } catch (e) {
+              console.error("Failed to load saved data", e);
+              handleGeneratePreview();
+            }
+          } else {
+            handleGeneratePreview();
+          }
+        } else {
+          // No data in database, check localStorage
+          const savedData = localStorage.getItem("aicte-form-data");
+          if (savedData) {
+            try {
+              const parsed = JSON.parse(savedData);
+              reset(parsed);
+              handleGeneratePreview(parsed);
+            } catch (e) {
+              handleGeneratePreview();
+            }
+          } else {
+            handleGeneratePreview();
+          }
+        }
+      } else {
+        // User not authenticated, use localStorage
+        const savedData = localStorage.getItem("aicte-form-data");
+        if (savedData) {
+          try {
+            const parsed = JSON.parse(savedData);
+            reset(parsed);
+            handleGeneratePreview(parsed);
+          } catch (e) {
+            console.error("Failed to load saved data", e);
+            handleGeneratePreview();
+          }
+        } else {
+          handleGeneratePreview();
+        }
       }
-    } else {
-      handleGeneratePreview();
-    }
-    setMounted(true);
+      setMounted(true);
+    };
+
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   if (!mounted) return null;
 
@@ -275,22 +346,22 @@ export default function FormFillerPage() {
     <div className="h-[calc(100vh)] bg-background">
       {/* Mobile Layout */}
       <div className="block md:hidden h-full">
-         <ScrollArea className="h-full">
-            <FormContent
-                form={form}
-                totalPoints={totalPoints}
-                handleGeneratePreview={() => handleGeneratePreview()}
-                isGenerating={isGenerating}
-                pdfContent={<PDFPreview data={previewData} />}
-                previewData={previewData}
-            />
-         </ScrollArea>
+        <ScrollArea className="h-full">
+          <FormContent
+            form={form}
+            totalPoints={totalPoints}
+            handleGeneratePreview={() => handleGeneratePreview()}
+            isGenerating={isGenerating}
+            pdfContent={<PDFPreview data={previewData} />}
+            previewData={previewData}
+          />
+        </ScrollArea>
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden md:flex h-full"> 
+      <div className="hidden md:flex h-full">
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          <ResizablePanel defaultSize={40} minSize={0}>
+          <ResizablePanel defaultSize={45} minSize={30} maxSize={70}>
             <ScrollArea className="h-full">
               <FormContent
                 form={form}
@@ -305,7 +376,7 @@ export default function FormFillerPage() {
 
           <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={60} minSize={0}>
+          <ResizablePanel defaultSize={55} minSize={30} maxSize={70}>
             <div className="h-full">
               <PDFPreview data={previewData} />
             </div>
