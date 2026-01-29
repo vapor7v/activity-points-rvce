@@ -57,6 +57,7 @@ import {
   FormFillerData,
   Activity,
   SEMESTERS,
+  AICTE_CATEGORIES,
 } from "@/lib/types/form-filler";
 import { nanoid } from "nanoid";
 import { differenceInDays, parseISO } from "date-fns";
@@ -428,13 +429,31 @@ export function ActivityList({
                 />
               </div>
 
+
               <div className="space-y-2">
                 <Label>AICTE Category</Label>
-                <Input
-                  {...register(`activities.${editingIndex}.aicteMapping`)}
-                  placeholder="Enter AICTE Category"
-                />
+                <Select
+                  onValueChange={(value) =>
+                    setValue(`activities.${editingIndex}.aicteMapping`, value)
+                  }
+                  defaultValue={getValues(`activities.${editingIndex}.aicteMapping`)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select AICTE Category" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {AICTE_CATEGORIES.map((category, idx) => (
+                      <SelectItem key={idx} value={category}>
+                        <div className="flex items-start gap-2">
+                          <span className="text-muted-foreground shrink-0">{idx + 1}.</span>
+                          <span className="line-clamp-2">{category}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
