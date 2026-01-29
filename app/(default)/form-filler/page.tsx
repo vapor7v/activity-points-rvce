@@ -29,7 +29,7 @@ import { SignatoriesForm } from "@/components/form-filler/signatories-form";
 import { GuideDialog } from "@/components/form-filler/guide-dialog";
 
 import { DownloadPDFButton } from "@/components/form-filler/download-pdf-button";
-import { loadFormData, saveFormData, migrateLocalStorageData, createDebouncedSave } from "@/lib/supabase/form-persistence";
+import { loadFormData, saveFormData, migrateLocalStorageData } from "@/lib/supabase/form-persistence";
 import useUser from "@/hooks/use-user";
 import { toast } from "sonner";
 
@@ -118,7 +118,7 @@ const FormContent = ({
               <RefreshCw className="w-4 h-4" />
             )}
             <span className="hidden sm:inline">
-              {isGenerating ? "Generating..." : "Generate Preview"}
+              {isGenerating ? "Saving & Generating..." : "Save & Generate Preview"}
             </span>
             <span className="sr-only">{isGenerating ? "..." : "Generate"}</span>
           </Button>
@@ -153,7 +153,7 @@ const FormContent = ({
 export default function FormFillerPage() {
   const [mounted, setMounted] = useState(false);
   const { data: user } = useUser();
-  const debouncedSaveRef = useRef(createDebouncedSave(30000)); // 30 seconds
+
 
   const form = useForm<FormFillerData>({
     defaultValues: {
@@ -204,14 +204,15 @@ export default function FormFillerPage() {
   const handleGeneratePreview = useCallback((data?: FormFillerData) => {
     const values = data || getValues();
 
-    // Save to localStorage as backup
-    if (typeof window !== "undefined") {
-      localStorage.setItem("aicte-form-data", JSON.stringify(values));
-    }
-
-    // Auto-save to database if user is authenticated
+    // Save to database if user is authenticated
     if (user) {
-      debouncedSaveRef.current(values);
+      saveFormData(values).then(({ success, error }) => {
+        if (success) {
+          toast.success("Form saved");
+        } else {
+          toast.error("Failed to save: " + error);
+        }
+      });
     }
 
     const currentTotalPoints = values.activities.reduce(
@@ -262,77 +263,27 @@ export default function FormFillerPage() {
     }, 600);
   }, [getValues, user]);
 
-  // Watch all form changes for auto-save
-  useEffect(() => {
-    if (!mounted) return;
-    const subscription = watch(() => {
-      const values = getValues();
-      handleGeneratePreview(values);
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, mounted, getValues, handleGeneratePreview]);
 
-  // Load data from database or localStorage on mount
+
+  // Load data from database on mount
   useEffect(() => {
     const loadData = async () => {
-      if (user) {
-        // Try to migrate localStorage data first
-        await migrateLocalStorageData();
+      if (!user) return;
 
-        // Load from database
-        const { data: dbData, error } = await loadFormData();
-        if (dbData) {
-          reset(dbData);
-          handleGeneratePreview(dbData);
-          toast.success("Form loaded from cloud");
-        } else if (error) {
-          console.error("Error loading from database:", error);
-          // Fallback to localStorage
-          const savedData = localStorage.getItem("aicte-form-data");
-          if (savedData) {
-            try {
-              const parsed = JSON.parse(savedData);
-              reset(parsed);
-              handleGeneratePreview(parsed);
-              toast.info("Loaded from local storage");
-            } catch (e) {
-              console.error("Failed to load saved data", e);
-              handleGeneratePreview();
-            }
-          } else {
-            handleGeneratePreview();
-          }
-        } else {
-          // No data in database, check localStorage
-          const savedData = localStorage.getItem("aicte-form-data");
-          if (savedData) {
-            try {
-              const parsed = JSON.parse(savedData);
-              reset(parsed);
-              handleGeneratePreview(parsed);
-            } catch (e) {
-              handleGeneratePreview();
-            }
-          } else {
-            handleGeneratePreview();
-          }
-        }
-      } else {
-        // User not authenticated, use localStorage
-        const savedData = localStorage.getItem("aicte-form-data");
-        if (savedData) {
-          try {
-            const parsed = JSON.parse(savedData);
-            reset(parsed);
-            handleGeneratePreview(parsed);
-          } catch (e) {
-            console.error("Failed to load saved data", e);
-            handleGeneratePreview();
-          }
-        } else {
-          handleGeneratePreview();
-        }
+      // Try to migrate localStorage data first
+      await migrateLocalStorageData();
+
+      // Load from database
+      const { data: dbData, error } = await loadFormData();
+      if (dbData) {
+        reset(dbData);
+        handleGeneratePreview(dbData);
+        toast.success("Form loaded");
+      } else if (error) {
+        console.error("Error loading from database:", error);
+        toast.error("Failed to load data");
       }
+      
       setMounted(true);
     };
 

@@ -51,7 +51,7 @@ export function SortableTableRow({
           <span>{index + 1}</span>
         </div>
       </TableCell>
-      <TableCell className="font-medium">
+      <TableCell className="font-medium max-w-[100px] truncate" title={activity.name}>
         {activity.name || "Untitled Activity"}
       </TableCell>
       <TableCell>{dateRange}</TableCell>

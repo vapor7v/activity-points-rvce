@@ -309,11 +309,11 @@ export function ActivityList({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Sl.</TableHead>
-                <TableHead>Activity Name</TableHead>
+                <TableHead className="w-[100px]">Activity Name</TableHead>
                 <TableHead>Dates</TableHead>
                 <TableHead>Sem</TableHead>
                 <TableHead>Points</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right w-12">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
