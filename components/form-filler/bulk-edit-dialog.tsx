@@ -70,21 +70,31 @@ export function BulkEditDialog({
 
   const handleReset = () => {
     setEditedValues({});
+    // Reset to default column when clearing
+    setSelectedColumn("hours");
   };
 
   const getCurrentValue = (activity: Activity, column: EditColumn) => {
-    switch (column) {
-      case "hours":
-        return activity.hoursSpent;
-      case "points":
-        return activity.pointsEarned;
-      case "semester":
-        return activity.semester;
-      case "place":
-        return activity.place;
-      case "aicteMapping":
-        return activity.aicteMapping;
+    const value = (() => {
+      switch (column) {
+        case "hours":
+          return activity.hoursSpent;
+        case "points":
+          return activity.pointsEarned;
+        case "semester":
+          return activity.semester;
+        case "place":
+          return activity.place;
+        case "aicteMapping":
+          return activity.aicteMapping;
+      }
+    })();
+
+    // Truncate long AICTE category text for display
+    if (column === "aicteMapping" && typeof value === "string" && value.length > 50) {
+      return value.substring(0, 50) + "...";
     }
+    return value;
   };
 
   return (
@@ -176,9 +186,9 @@ export function BulkEditDialog({
                           <SelectContent className="max-h-[300px]">
                             {AICTE_CATEGORIES.map((category, idx) => (
                               <SelectItem key={idx} value={category}>
-                                <div className="flex items-start gap-2">
+                                <div className="flex items-start gap-2 py-1">
                                   <span className="text-muted-foreground shrink-0">{idx + 1}.</span>
-                                  <span className="line-clamp-2">{category}</span>
+                                  <span className="text-sm leading-tight">{category}</span>
                                 </div>
                               </SelectItem>
                             ))}
