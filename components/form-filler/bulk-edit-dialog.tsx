@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Activity, SEMESTERS } from "@/lib/types/form-filler";
+import { Activity, SEMESTERS, AICTE_CATEGORIES } from "@/lib/types/form-filler";
 import { toast } from "sonner";
 
 interface BulkEditDialogProps {
@@ -156,6 +156,31 @@ export function BulkEditDialog({
                             {SEMESTERS.map((sem) => (
                               <SelectItem key={sem} value={sem}>
                                 Sem {sem}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : selectedColumn === "aicteMapping" ? (
+                        <Select
+                          value={editedValues[activity.id]?.toString() || ""}
+                          onValueChange={(value) =>
+                            setEditedValues((prev) => ({
+                              ...prev,
+                              [activity.id]: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Keep current" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectItem value="">Keep current</SelectItem>
+                            {AICTE_CATEGORIES.map((category, idx) => (
+                              <SelectItem key={idx} value={category}>
+                                <div className="flex items-start gap-2">
+                                  <span className="text-muted-foreground shrink-0">{idx + 1}.</span>
+                                  <span className="line-clamp-2">{category}</span>
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
