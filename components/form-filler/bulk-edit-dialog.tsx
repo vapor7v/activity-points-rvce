@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -93,7 +93,7 @@ export function BulkEditDialog({
           <DialogTitle>Bulk Edit Activities</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Select Column to Edit</Label>
             <Select
@@ -108,7 +108,7 @@ export function BulkEditDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="hours">Hours Spent</SelectItem>
-                            <SelectItem value="points">Points Earned</SelectItem>
+                <SelectItem value="points">Points Earned</SelectItem>
                 <SelectItem value="semester">Semester</SelectItem>
                 <SelectItem value="place">Place</SelectItem>
                 <SelectItem value="aicteMapping">AICTE Category</SelectItem>
@@ -116,7 +116,7 @@ export function BulkEditDialog({
             </Select>
           </div>
 
-          <ScrollArea className="flex-1 border rounded-md p-4">
+          <ScrollArea className="h-[400px] border rounded-md p-4">
             <div className="space-y-4">
               {activities.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
@@ -138,7 +138,7 @@ export function BulkEditDialog({
                       </div>
                     </div>
                     <div>
-                        {selectedColumn === "semester" ? (
+                      {selectedColumn === "semester" ? (
                         <Select
                           value={editedValues[activity.id]?.toString() || ""}
                           onValueChange={(value) =>
@@ -168,7 +168,7 @@ export function BulkEditDialog({
                               : "text"
                           }
                           placeholder="Keep current"
-                           value={editedValues[activity.id] || ""}
+                          value={editedValues[activity.id] || ""}
                           onChange={(e) =>
                             setEditedValues((prev) => ({
                               ...prev,
