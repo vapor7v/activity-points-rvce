@@ -441,7 +441,7 @@ export function ActivityList({
                     }
                   }}
                   value={
-                    AICTE_CATEGORIES.includes(getValues(`activities.${editingIndex}.aicteMapping`))
+                    (AICTE_CATEGORIES as readonly string[]).includes(getValues(`activities.${editingIndex}.aicteMapping`))
                       ? getValues(`activities.${editingIndex}.aicteMapping`)
                       : "__manual__"
                   }
@@ -466,7 +466,7 @@ export function ActivityList({
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                {!AICTE_CATEGORIES.includes(getValues(`activities.${editingIndex}.aicteMapping`)) && (
+                {!(AICTE_CATEGORIES as readonly string[]).includes(getValues(`activities.${editingIndex}.aicteMapping`)) && (
                   <Input
                     {...register(`activities.${editingIndex}.aicteMapping`)}
                     placeholder="Enter custom AICTE category..."
