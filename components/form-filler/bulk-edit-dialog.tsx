@@ -179,7 +179,7 @@ export function BulkEditDialog({
                               value={
                                 editedValues[activity.id]
                                   ? editedValues[activity.id].toString()
-                                  : AICTE_CATEGORIES.includes(activity.aicteMapping)
+                                  : (AICTE_CATEGORIES as readonly string[]).includes(activity.aicteMapping)
                                     ? activity.aicteMapping
                                     : "__manual__"
                               }
@@ -295,4 +295,3 @@ export function BulkEditDialog({
     </Dialog>
   );
 }
-
