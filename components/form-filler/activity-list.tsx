@@ -433,10 +433,18 @@ export function ActivityList({
               <div className="space-y-2">
                 <Label>AICTE Category</Label>
                 <Select
-                  onValueChange={(value) =>
-                    setValue(`activities.${editingIndex}.aicteMapping`, value)
+                  onValueChange={(value) => {
+                    if (value === "__manual__") {
+                      setValue(`activities.${editingIndex}.aicteMapping`, "");
+                    } else {
+                      setValue(`activities.${editingIndex}.aicteMapping`, value);
+                    }
+                  }}
+                  value={
+                    AICTE_CATEGORIES.includes(getValues(`activities.${editingIndex}.aicteMapping`))
+                      ? getValues(`activities.${editingIndex}.aicteMapping`)
+                      : "__manual__"
                   }
-                  defaultValue={getValues(`activities.${editingIndex}.aicteMapping`)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select AICTE Category" />
@@ -450,8 +458,21 @@ export function ActivityList({
                         </div>
                       </SelectItem>
                     ))}
+                    <SelectItem value="__manual__">
+                      <div className="flex items-start gap-2">
+                        <span className="text-muted-foreground shrink-0">✏️</span>
+                        <span className="font-medium">Other (Enter Manually)</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                {!AICTE_CATEGORIES.includes(getValues(`activities.${editingIndex}.aicteMapping`)) && (
+                  <Input
+                    {...register(`activities.${editingIndex}.aicteMapping`)}
+                    placeholder="Enter custom AICTE category..."
+                    className="mt-2"
+                  />
+                )}
               </div>
 
 
