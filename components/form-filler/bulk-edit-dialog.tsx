@@ -39,6 +39,7 @@ export function BulkEditDialog({
 }: BulkEditDialogProps) {
   const [selectedColumn, setSelectedColumn] = useState<EditColumn>("hours");
   const [editedValues, setEditedValues] = useState<Record<string, string | number>>({});
+  const [manualEntryMode, setManualEntryMode] = useState<Record<string, boolean>>({});
 
   const handleApply = () => {
     const updates: Partial<Activity>[] = activities.map((activity) => {
@@ -70,6 +71,7 @@ export function BulkEditDialog({
 
   const handleReset = () => {
     setEditedValues({});
+    setManualEntryMode({});
     // Reset to default column when clearing
     setSelectedColumn("hours");
   };
@@ -171,29 +173,89 @@ export function BulkEditDialog({
                           </SelectContent>
                         </Select>
                       ) : selectedColumn === "aicteMapping" ? (
-                        <Select
-                          value={editedValues[activity.id]?.toString()}
-                          onValueChange={(value) =>
-                            setEditedValues((prev) => ({
-                              ...prev,
-                              [activity.id]: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Keep current" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-[300px]">
-                            {AICTE_CATEGORIES.map((category, idx) => (
-                              <SelectItem key={idx} value={category}>
-                                <div className="flex items-start gap-2 py-1">
-                                  <span className="text-muted-foreground shrink-0">{idx + 1}.</span>
-                                  <span className="text-sm leading-tight">{category}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <>
+                          {!manualEntryMode[activity.id] ? (
+                            <Select
+                              value={
+                                editedValues[activity.id]
+                                  ? editedValues[activity.id].toString()
+                                  : AICTE_CATEGORIES.includes(activity.aicteMapping)
+                                    ? activity.aicteMapping
+                                    : "__manual__"
+                              }
+                              onValueChange={(value) => {
+                                if (value === "__manual__") {
+                                  setManualEntryMode((prev) => ({
+                                    ...prev,
+                                    [activity.id]: true,
+                                  }));
+                                  setEditedValues((prev) => ({
+                                    ...prev,
+                                    [activity.id]: activity.aicteMapping,
+                                  }));
+                                } else {
+                                  setEditedValues((prev) => ({
+                                    ...prev,
+                                    [activity.id]: value,
+                                  }));
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Keep current" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[300px]">
+                                {AICTE_CATEGORIES.map((category, idx) => (
+                                  <SelectItem key={idx} value={category}>
+                                    <div className="flex items-start gap-2 py-1">
+                                      <span className="text-muted-foreground shrink-0">{idx + 1}.</span>
+                                      <span className="text-sm leading-tight">{category}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="__manual__">
+                                  <div className="flex items-start gap-2 py-1">
+                                    <span className="text-muted-foreground shrink-0">✏️</span>
+                                    <span className="font-medium text-sm">Other (Enter Manually)</span>
+                                  </div>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                type="text"
+                                placeholder="Enter custom category..."
+                                value={editedValues[activity.id] || ""}
+                                onChange={(e) =>
+                                  setEditedValues((prev) => ({
+                                    ...prev,
+                                    [activity.id]: e.target.value,
+                                  }))
+                                }
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setManualEntryMode((prev) => ({
+                                    ...prev,
+                                    [activity.id]: false,
+                                  }));
+                                  setEditedValues((prev) => {
+                                    const newValues = { ...prev };
+                                    delete newValues[activity.id];
+                                    return newValues;
+                                  });
+                                }}
+                                title="Back to dropdown"
+                              >
+                                ↩
+                              </Button>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <Input
                           type={
