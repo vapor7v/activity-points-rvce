@@ -92,3 +92,4 @@ export const AICTE_CATEGORIES = [
   "Spreading public awareness under rural outreach program",
   "Contribution to any national level initiative of Government of India. For eg. Digital India, Skill India, Swachh Bharat Internship etc",
 ] as const;
+
