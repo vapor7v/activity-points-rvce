@@ -1,5 +1,7 @@
 "use client";
 
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
 import { useState } from "react";
 import {
   Control,
@@ -52,7 +54,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, X, GripVertical, Table2 } from "lucide-react";
+import { Plus, Trash2, Pencil, X, GripVertical, Table2, Sparkles } from "lucide-react";
 import {
   FormFillerData,
   Activity,
@@ -138,6 +140,39 @@ export function ActivityList({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [expandingField, setExpandingField] = useState<string | null>(null);
+
+  const aiExpand = async (field: `activities.${number}.description` | `activities.${number}.outcomes`) => {
+    const currentText = getValues(field);
+    if (!currentText || currentText.trim().length === 0) {
+      alert("Please write some text first, then click AI Expand to enhance it.");
+      return;
+    }
+    setExpandingField(field);
+    try {
+      const fieldType = field.includes('description') ? 'description' : 'outcomes';
+      const activityName = getValues(`activities.${editingIndex}.name`) || 'the activity';
+      const prompt = fieldType === 'description'
+        ? `Expand the following short description of an activity called "${activityName}" into a detailed, well-written paragraph suitable for an AICTE Activity Points report for a college student. Keep it professional, factual, and concise (around 80-120 words). Only output the expanded text, no labels or quotes:\n\n${currentText}`
+        : `Expand the following short outcomes of an activity called "${activityName}" into a detailed, well-written paragraph about learning outcomes suitable for an AICTE Activity Points report for a college student. Keep it professional and concise (around 60-100 words). Only output the expanded text, no labels or quotes:\n\n${currentText}`;
+
+      const puter = (window as any).puter;
+      if (!puter?.ai?.chat) {
+        alert("AI service not loaded yet. Please try again.");
+        setExpandingField(null);
+        return;
+      }
+      const response = await puter.ai.chat(prompt, { model: "gpt-4o-mini" });
+      const expandedText = typeof response === 'string' ? response : response?.message?.content || response?.toString() || '';
+      if (expandedText) {
+        setValue(field, expandedText.trim());
+      }
+    } catch (err) {
+      console.error("AI expand error:", err);
+      alert("AI expand failed. Please try again.");
+    }
+    setExpandingField(null);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -538,7 +573,24 @@ export function ActivityList({
               </div>
 
               <div className="space-y-2">
-                <Label>Description</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Description</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950"
+                    disabled={expandingField === `activities.${editingIndex}.description`}
+                    onClick={() => aiExpand(`activities.${editingIndex}.description`)}
+                  >
+                    {expandingField === `activities.${editingIndex}.description` ? (
+                      <AiOutlineLoading3Quarters className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    AI Expand
+                  </Button>
+                </div>
                 <Textarea
                   {...register(`activities.${editingIndex}.description`)}
                   placeholder="Describe the activity..."
@@ -546,7 +598,24 @@ export function ActivityList({
               </div>
 
               <div className="space-y-2">
-                <Label>Outcomes</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Outcomes</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950"
+                    disabled={expandingField === `activities.${editingIndex}.outcomes`}
+                    onClick={() => aiExpand(`activities.${editingIndex}.outcomes`)}
+                  >
+                    {expandingField === `activities.${editingIndex}.outcomes` ? (
+                      <AiOutlineLoading3Quarters className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    AI Expand
+                  </Button>
+                </div>
                 <Textarea
                   {...register(`activities.${editingIndex}.outcomes`)}
                   placeholder="What did you learn?"

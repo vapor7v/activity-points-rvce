@@ -28,6 +28,7 @@ export default function RootLayout({
         />
       </head> */}
       <body className={`${inter.className} h-full`}>
+        <Script src="https://js.puter.com/v2/" strategy="beforeInteractive" />
           <QueryProvider>
             <ThemeProvider
               attribute="class"
