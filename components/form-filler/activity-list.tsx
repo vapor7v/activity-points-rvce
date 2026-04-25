@@ -54,7 +54,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, X, GripVertical, Table2, Sparkles } from "lucide-react";
+import { Plus, Trash2, Pencil, X, GripVertical, Table2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   FormFillerData,
   Activity,
@@ -628,13 +628,43 @@ export function ActivityList({
 
                 {(activities?.[editingIndex]?.photos || []).length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mb-2">
-                    {activities?.[editingIndex]?.photos?.map((photo, pIdx) => (
+                    {activities?.[editingIndex]?.photos?.map((photo, pIdx) => {
+                      const totalPhotos = activities?.[editingIndex]?.photos?.length || 0;
+                      return (
                       <div key={pIdx} className="relative group border rounded-md overflow-hidden aspect-video bg-muted">
                         <img
                           src={photo}
                           alt={`Photo ${pIdx + 1}`}
                           className="w-full h-full object-cover"
                         />
+                        <div className="absolute bottom-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {pIdx > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const photos = [...(getValues(`activities.${editingIndex}.photos`) || [])];
+                                [photos[pIdx - 1], photos[pIdx]] = [photos[pIdx], photos[pIdx - 1]];
+                                setValue(`activities.${editingIndex}.photos`, photos);
+                              }}
+                              className="bg-black/70 text-white rounded p-0.5 hover:bg-black/90"
+                            >
+                              <ChevronLeft className="w-3 h-3" />
+                            </button>
+                          )}
+                          {pIdx < totalPhotos - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const photos = [...(getValues(`activities.${editingIndex}.photos`) || [])];
+                                [photos[pIdx], photos[pIdx + 1]] = [photos[pIdx + 1], photos[pIdx]];
+                                setValue(`activities.${editingIndex}.photos`, photos);
+                              }}
+                              className="bg-black/70 text-white rounded p-0.5 hover:bg-black/90"
+                            >
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
                         <button
                           type="button"
                           onClick={() => {
@@ -646,8 +676,12 @@ export function ActivityList({
                         >
                           <X className="w-3 h-3" />
                         </button>
+                        <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          {pIdx + 1}
+                        </span>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -710,13 +744,43 @@ export function ActivityList({
                     : certImages;
                   return allCerts.length > 0 ? (
                     <div className="grid grid-cols-3 gap-2 mb-2">
-                      {allCerts.map((cert, cIdx) => (
+                      {allCerts.map((cert, cIdx) => {
+                        const totalCerts = allCerts.length;
+                        return (
                         <div key={cIdx} className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted">
                           <img
                             src={cert}
                             alt={`Certificate ${cIdx + 1}`}
                             className="w-full h-full object-contain"
                           />
+                          <div className="absolute bottom-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {cIdx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const certs = [...(getValues(`activities.${editingIndex}.certificateImages`) || [])];
+                                  [certs[cIdx - 1], certs[cIdx]] = [certs[cIdx], certs[cIdx - 1]];
+                                  setValue(`activities.${editingIndex}.certificateImages`, certs);
+                                }}
+                                className="bg-black/70 text-white rounded p-0.5 hover:bg-black/90"
+                              >
+                                <ChevronLeft className="w-3 h-3" />
+                              </button>
+                            )}
+                            {cIdx < totalCerts - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const certs = [...(getValues(`activities.${editingIndex}.certificateImages`) || [])];
+                                  [certs[cIdx], certs[cIdx + 1]] = [certs[cIdx + 1], certs[cIdx]];
+                                  setValue(`activities.${editingIndex}.certificateImages`, certs);
+                                }}
+                                className="bg-black/70 text-white rounded p-0.5 hover:bg-black/90"
+                              >
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() => {
@@ -735,8 +799,12 @@ export function ActivityList({
                           >
                             <X className="w-3 h-3" />
                           </button>
+                          <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                            {cIdx + 1}
+                          </span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : null;
                 })()}
