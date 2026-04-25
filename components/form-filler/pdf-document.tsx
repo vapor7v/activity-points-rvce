@@ -8,7 +8,7 @@ import { EvaluationPages } from "./pdf/evaluation-page";
 import { ActivityPages } from "./pdf/activity-page";
 import { PreamblePage } from "./pdf/preamble-page";
 import { chunkArray } from "./pdf/utils";
-import { INDEX_ROWS_PER_PAGE, EVALUATION_ROWS_PER_PAGE } from "./pdf/styles";
+import { EVALUATION_ROWS_PER_PAGE } from "./pdf/styles";
 
 interface PDFDocumentProps {
   data: FormFillerData;
@@ -19,10 +19,13 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
   
   // Calculate offsets for page numbering
   // 1 (Certificate) + Index Pages + Evaluation Pages
-  const activityPages = chunkArray(activities, INDEX_ROWS_PER_PAGE);
+  const FIRST_PAGE_ROWS = 6;
+  const CONTINUATION_PAGE_ROWS = 10;
+  const indexPageCount = activities.length <= 0 ? 1 :
+    1 + Math.max(0, Math.ceil((activities.length - FIRST_PAGE_ROWS) / CONTINUATION_PAGE_ROWS));
   const evaluationPages = chunkArray(evaluations, EVALUATION_ROWS_PER_PAGE);
   
-  const startPageOffset = 1 + activityPages.length + evaluationPages.length;
+  const startPageOffset = 1 + indexPageCount + evaluationPages.length;
 
   return (
     <Document>

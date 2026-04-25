@@ -737,15 +737,10 @@ export function ActivityList({
 
                 {(() => {
                   const certImages = activities?.[editingIndex]?.certificateImages || [];
-                  // Also show legacy single image if present and not already in the array
-                  const legacyCert = activities?.[editingIndex]?.certificateImage;
-                  const allCerts = legacyCert && !certImages.includes(legacyCert)
-                    ? [legacyCert, ...certImages]
-                    : certImages;
-                  return allCerts.length > 0 ? (
+                  return certImages.length > 0 ? (
                     <div className="grid grid-cols-3 gap-2 mb-2">
-                      {allCerts.map((cert, cIdx) => {
-                        const totalCerts = allCerts.length;
+                      {certImages.map((cert, cIdx) => {
+                        const totalCerts = certImages.length;
                         return (
                         <div key={cIdx} className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted">
                           <img
@@ -785,13 +780,9 @@ export function ActivityList({
                             type="button"
                             onClick={() => {
                               const currentCerts = getValues(`activities.${editingIndex}.certificateImages`) || [];
-                              // If removing the legacy image
-                              if (cert === getValues(`activities.${editingIndex}.certificateImage`)) {
-                                setValue(`activities.${editingIndex}.certificateImage`, "");
-                              }
-                              const newCerts = currentCerts.filter((_, i) => i !== (legacyCert && !currentCerts.includes(legacyCert) ? cIdx - 1 : cIdx));
+                              const newCerts = currentCerts.filter((_, i) => i !== cIdx);
                               setValue(`activities.${editingIndex}.certificateImages`, newCerts);
-                              if (newCerts.length === 0 && !getValues(`activities.${editingIndex}.certificateImage`)) {
+                              if (newCerts.length === 0) {
                                 setValue(`activities.${editingIndex}.certificateAttached`, false);
                               }
                             }}
@@ -852,11 +843,7 @@ export function ActivityList({
                   }}
                 />
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(() => {
-                    const count = (activities?.[editingIndex]?.certificateImages || []).length
-                      + (activities?.[editingIndex]?.certificateImage ? 1 : 0);
-                    return `${count} certificate${count !== 1 ? 's' : ''} attached`;
-                  })()}
+                  {(activities?.[editingIndex]?.certificateImages || []).length} certificate{(activities?.[editingIndex]?.certificateImages || []).length !== 1 ? 's' : ''} attached
                 </div>
               </div>
 

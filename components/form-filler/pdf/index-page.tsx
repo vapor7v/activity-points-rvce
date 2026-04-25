@@ -1,23 +1,73 @@
 import { Page, View, Text } from "@react-pdf/renderer";
 import { FormFillerData, Activity } from "@/lib/types/form-filler";
-import { styles, INDEX_ROWS_PER_PAGE } from "./styles";
+import { styles } from "./styles";
 import { Header, Footer } from "./common";
-import { formatDateRange, chunkArray } from "./utils";
+import { formatDateRange } from "./utils";
 
 interface IndexPagesProps {
   activities: Activity[];
   student: FormFillerData["student"];
 }
 
+const FIRST_PAGE_ROWS = 6;
+const CONTINUATION_PAGE_ROWS = 10;
+
+const TableHeader = () => (
+  <View style={[styles.tableRow, styles.tableHeader]} fixed>
+    <Text style={[styles.tableCell, { width: "5%" }]}>Sl. No</Text>
+    <Text style={[styles.tableCell, { width: "8%" }]}>Semester</Text>
+    <Text style={[styles.tableCell, { width: "18%" }]}>
+      Name of the Activity
+    </Text>
+    <Text style={[styles.tableCell, { width: "12%" }]}>
+      Map to AICTE Activity
+    </Text>
+    <Text style={[styles.tableCell, { width: "12%" }]}>
+      Date (from & to) duration
+    </Text>
+    <Text style={[styles.tableCell, { width: "12%" }]}>
+      Place where activity was carried
+    </Text>
+    <Text style={[styles.tableCell, { width: "8%" }]}>
+      Detailed report Page No
+    </Text>
+    <Text style={[styles.tableCell, { width: "10%" }]}>
+      Certificate / Proof Attached (Y/N)
+    </Text>
+    <Text style={[styles.tableCell, { width: "7%" }]}>
+      Points attained
+    </Text>
+    <Text style={[styles.tableCellLast, { width: "8%" }]}>
+      Signature of the counsellor
+    </Text>
+  </View>
+);
+
+function paginateActivities(activities: Activity[]): Activity[][] {
+  if (activities.length === 0) return [[]];
+  const pages: Activity[][] = [];
+  // First page has fewer rows due to header/title
+  const firstPageItems = activities.slice(0, FIRST_PAGE_ROWS);
+  pages.push(firstPageItems);
+  // Remaining pages
+  let remaining = activities.slice(FIRST_PAGE_ROWS);
+  while (remaining.length > 0) {
+    pages.push(remaining.slice(0, CONTINUATION_PAGE_ROWS));
+    remaining = remaining.slice(CONTINUATION_PAGE_ROWS);
+  }
+  return pages;
+}
+
 export const IndexPages = ({ activities, student }: IndexPagesProps) => {
-  const activityPages = chunkArray(activities, INDEX_ROWS_PER_PAGE);
+  const activityPages = paginateActivities(activities);
+
+  let runningIndex = 0;
 
   return activityPages.map((pageActivities, pageIndex) => {
     const isFirstPage = pageIndex === 0;
     const isLastPage = pageIndex === activityPages.length - 1;
-    const startIndex = pageIndex * INDEX_ROWS_PER_PAGE;
 
-    return (
+    const page = (
       <Page
         key={`index-${pageIndex}`}
         size="A4"
@@ -44,70 +94,44 @@ export const IndexPages = ({ activities, student }: IndexPagesProps) => {
         )}
 
         <View style={styles.table}>
-          {isFirstPage && (
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={[styles.tableCell, { width: "5%" }]}>Sl. No</Text>
-              <Text style={[styles.tableCell, { width: "8%" }]}>Semester</Text>
-              <Text style={[styles.tableCell, { width: "18%" }]}>
-                Name of the Activity
-              </Text>
-              <Text style={[styles.tableCell, { width: "12%" }]}>
-                Map to AICTE Activity
-              </Text>
-              <Text style={[styles.tableCell, { width: "12%" }]}>
-                Date (from & to) duration
-              </Text>
-              <Text style={[styles.tableCell, { width: "12%" }]}>
-                Place where activity was carried
-              </Text>
-              <Text style={[styles.tableCell, { width: "8%" }]}>
-                Detailed report Page No
-              </Text>
-              <Text style={[styles.tableCell, { width: "10%" }]}>
-                Certificate / Proof Attached (Y/N)
-              </Text>
-              <Text style={[styles.tableCell, { width: "7%" }]}>
-                Points attained
-              </Text>
-              <Text style={[styles.tableCellLast, { width: "8%" }]}>
-                Signature of the counsellor
-              </Text>
-            </View>
-          )}
+          <TableHeader />
 
           {pageActivities.length > 0 ? (
-            pageActivities.map((activity, idx) => (
-              <View key={activity.id} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { width: "5%" }]}>
-                  {startIndex + idx + 1}
-                </Text>
-                <Text style={[styles.tableCell, { width: "8%" }]}>
-                  {activity.semester}
-                </Text>
-                <Text style={[styles.tableCell, { width: "18%" }]}>
-                  {activity.name}
-                </Text>
-                <Text style={[styles.tableCell, { width: "12%" }]}>
-                  {activity.aicteMapping}
-                </Text>
-                <Text style={[styles.tableCell, { width: "12%" }]}>
-                  {formatDateRange(activity)}
-                </Text>
-                <Text style={[styles.tableCell, { width: "12%" }]}>
-                  {activity.place}
-                </Text>
-                <Text style={[styles.tableCell, { width: "8%" }]}>
-                  {activity.detailedReportPageNo || ""}
-                </Text>
-                <Text style={[styles.tableCell, { width: "10%" }]}>
-                  {activity.certificateAttached ? "Y" : "N"}
-                </Text>
-                <Text style={[styles.tableCell, { width: "7%" }]}>
-                  {activity.pointsEarned}
-                </Text>
-                <Text style={[styles.tableCellLast, { width: "8%" }]}></Text>
-              </View>
-            ))
+            pageActivities.map((activity, idx) => {
+              const slNo = runningIndex + idx + 1;
+              return (
+                <View key={activity.id} style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { width: "5%" }]}>
+                    {slNo}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "8%" }]}>
+                    {activity.semester}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "18%" }]}>
+                    {activity.name}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "12%" }]}>
+                    {activity.aicteMapping}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "12%" }]}>
+                    {formatDateRange(activity)}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "12%" }]}>
+                    {activity.place}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "8%" }]}>
+                    {activity.detailedReportPageNo || ""}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "10%" }]}>
+                    {activity.certificateAttached ? "Y" : "N"}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "7%" }]}>
+                    {activity.pointsEarned}
+                  </Text>
+                  <Text style={[styles.tableCellLast, { width: "8%" }]}></Text>
+                </View>
+              );
+            })
           ) : (
             <View style={styles.tableRow}>
               <Text
@@ -140,5 +164,8 @@ export const IndexPages = ({ activities, student }: IndexPagesProps) => {
         <Footer />
       </Page>
     );
+
+    runningIndex += pageActivities.length;
+    return page;
   });
 };

@@ -95,11 +95,19 @@ export async function loadFormData(): Promise<{ data?: FormFillerData; error?: s
     // Normalize activities to ensure new fields exist
     const formData = data.form_data as FormFillerData;
     if (formData.activities) {
-      formData.activities = formData.activities.map(activity => ({
-        ...activity,
-        photos: activity.photos || [],
-        certificateImages: activity.certificateImages || [],
-      }));
+      formData.activities = formData.activities.map(activity => {
+        const certImages = activity.certificateImages || [];
+        // Migrate legacy single certificateImage into certificateImages array
+        if (activity.certificateImage && !certImages.includes(activity.certificateImage)) {
+          certImages.unshift(activity.certificateImage);
+        }
+        return {
+          ...activity,
+          photos: activity.photos || [],
+          certificateImages: certImages,
+          certificateImage: "", // clear legacy field
+        };
+      });
     }
 
     return { data: formData };
