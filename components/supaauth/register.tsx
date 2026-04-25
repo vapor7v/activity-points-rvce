@@ -6,13 +6,12 @@ import Social from './social'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 export default function Register() {
-  const queryString = typeof window !== 'undefined' ? window?.location.search : ''
-  const urlParams = new URLSearchParams(queryString)
+  const searchParams = useSearchParams()
   const appName = process.env.NEXT_PUBLIC_APP_NAME!
   const appIcon = process.env.NEXT_PUBLIC_APP_ICON!
 
-  const next = urlParams.get('next')
-  const verify = urlParams.get('verify')
+  const next = searchParams.get('next')
+  const verify = searchParams.get('verify')
   return (
     <div className="w-full sm:w-[26rem] shadow sm:p-5  border dark:border-zinc-800 rounded-md">
       <div className="p-5 space-y-5">
