@@ -60,7 +60,7 @@ export const ActivityPages = ({
       </Page>
     );
 
-    // Photo pages: Each photo gets its own full page
+    // Photo pages: Each photo gets its own page with "Photos" label and bounding box
     if (activity.photos && activity.photos.length > 0) {
       activity.photos.forEach((photo, idx) => {
         pages.push(
@@ -71,7 +71,14 @@ export const ActivityPages = ({
             style={styles.pagePortrait}
           >
             <ActivityHeader />
-            <Image src={photo} style={styles.fullPageImage} />
+            <View style={styles.activityTable}>
+              <View style={styles.photoRow}>
+                <Text style={styles.activityLabel}>Photos</Text>
+                <View style={styles.photoFullCell}>
+                  <Image src={photo} style={styles.photoFull} />
+                </View>
+              </View>
+            </View>
             <ActivityFooter
               department={department || ""}
               pageOffset={startPageOffset}
@@ -81,7 +88,7 @@ export const ActivityPages = ({
       });
     }
 
-    // Certificate pages: Each certificate gets its own full page
+    // Certificate pages: Each certificate gets its own full page (no labels/borders)
     const certImages = activity.certificateImages && activity.certificateImages.length > 0
       ? activity.certificateImages
       : activity.certificateImage

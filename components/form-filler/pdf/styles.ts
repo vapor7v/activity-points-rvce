@@ -289,6 +289,23 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
   },
+  photoRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+    minHeight: 600,
+  },
+  photoFullCell: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoFull: {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  },
   outcomeCell: {
     flex: 1,
     padding: 8,
