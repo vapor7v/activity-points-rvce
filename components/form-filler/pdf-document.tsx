@@ -27,11 +27,23 @@ export const PDFDocumentTemplate = ({ data }: PDFDocumentProps) => {
   
   const startPageOffset = 1 + indexPageCount + evaluationPages.length;
 
+  // Compute the relative page number where each activity's detail page lands
+  // Page numbering starts from 1 for the activity section
+  const activityPageNumbers: number[] = [];
+  let cumulativePage = 1; // first activity starts at page 1
+  for (const activity of activities) {
+    activityPageNumbers.push(cumulativePage);
+    const photoPages = (activity.photos || []).length;
+    const certPages = (activity.certificateImages || []).length
+      || (activity.certificateImage ? 1 : 0);
+    cumulativePage += 1 + photoPages + certPages; // 1 detail + photos + certs
+  }
+
   return (
     <Document>
       <CertificatePage data={data} />
       
-      <IndexPages activities={activities} student={student} />
+      <IndexPages activities={activities} student={student} activityPageNumbers={activityPageNumbers} />
       
       <EvaluationPages evaluations={evaluations} signatories={signatories} />
       

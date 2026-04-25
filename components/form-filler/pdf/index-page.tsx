@@ -7,6 +7,7 @@ import { formatDateRange } from "./utils";
 interface IndexPagesProps {
   activities: Activity[];
   student: FormFillerData["student"];
+  activityPageNumbers: number[];
 }
 
 const FIRST_PAGE_ROWS = 6;
@@ -58,7 +59,7 @@ function paginateActivities(activities: Activity[]): Activity[][] {
   return pages;
 }
 
-export const IndexPages = ({ activities, student }: IndexPagesProps) => {
+export const IndexPages = ({ activities, student, activityPageNumbers }: IndexPagesProps) => {
   const activityPages = paginateActivities(activities);
 
   let runningIndex = 0;
@@ -120,7 +121,7 @@ export const IndexPages = ({ activities, student }: IndexPagesProps) => {
                     {activity.place}
                   </Text>
                   <Text style={[styles.tableCell, { width: "8%" }]}>
-                    {activity.detailedReportPageNo || ""}
+                    {activityPageNumbers[runningIndex + idx] || ""}
                   </Text>
                   <Text style={[styles.tableCell, { width: "10%" }]}>
                     {activity.certificateAttached ? "Y" : "N"}
