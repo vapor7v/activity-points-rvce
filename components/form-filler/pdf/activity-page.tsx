@@ -18,7 +18,7 @@ export const ActivityPages = ({
   return activities.flatMap((activity, index) => {
     const pages = [];
 
-    // Page 1: Activity details (no photos)
+    // Page 1: Activity details only (strict - always one page)
     pages.push(
       <Page
         key={`${activity.id}-details`}
@@ -53,9 +53,6 @@ export const ActivityPages = ({
             <Text style={styles.activityValue}>{activity.pointsEarned}</Text>
           </View>
         </View>
-        {activity.certificateAttached && activity.certificateImage && (
-          <Image src={activity.certificateImage} style={styles.certificateImage} />
-        )}
         <ActivityFooter
           department={department || ""}
           pageOffset={startPageOffset}
@@ -63,7 +60,7 @@ export const ActivityPages = ({
       </Page>
     );
 
-    // Page 2: Photos page (only if there are photos)
+    // Page 2: Photos (only if photos exist)
     if (activity.photos && activity.photos.length > 0) {
       pages.push(
         <Page
@@ -73,22 +70,30 @@ export const ActivityPages = ({
           style={styles.pagePortrait}
         >
           <ActivityHeader />
-          <View style={styles.activityTable}>
-            <View style={styles.activityRow}>
-              <Text style={styles.activityLabel}>Sl. No.</Text>
-              <Text style={styles.activityValue}>{index + 1}</Text>
-            </View>
-            <View style={styles.activityRow}>
-              <Text style={styles.activityLabel}>Photos</Text>
-              <View style={styles.photosCell}>
-                <View style={styles.photosContainer}>
-                  {activity.photos.map((photo, idx) => (
-                    <Image key={idx} src={photo} style={styles.photo} />
-                  ))}
-                </View>
-              </View>
-            </View>
+          <View style={styles.photosPageContainer}>
+            {activity.photos.map((photo, idx) => (
+              <Image key={idx} src={photo} style={styles.photo} />
+            ))}
           </View>
+          <ActivityFooter
+            department={department || ""}
+            pageOffset={startPageOffset}
+          />
+        </Page>
+      );
+    }
+
+    // Page 3: Certificate (only if certificate exists)
+    if (activity.certificateAttached && activity.certificateImage) {
+      pages.push(
+        <Page
+          key={`${activity.id}-certificate`}
+          size="A4"
+          orientation="portrait"
+          style={styles.pagePortrait}
+        >
+          <ActivityHeader />
+          <Image src={activity.certificateImage} style={styles.certificateImage} />
           <ActivityFooter
             department={department || ""}
             pageOffset={startPageOffset}

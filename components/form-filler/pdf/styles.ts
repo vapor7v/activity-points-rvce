@@ -306,6 +306,13 @@ export const styles = StyleSheet.create({
     gap: 10,
     marginTop: 5,
   },
+  photosPageContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 15,
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
   photo: {
     width: 320,
     height: 220,
