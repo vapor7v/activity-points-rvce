@@ -25,6 +25,7 @@ export interface Activity {
   outcomes: string;
   signatureOfCounsellor: string;
   certificateImage?: string;
+  certificateImages: string[];
 }
 
 export interface EvaluationEntry {

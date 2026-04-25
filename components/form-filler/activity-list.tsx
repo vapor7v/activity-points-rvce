@@ -107,6 +107,7 @@ const defaultActivity: Omit<Activity, "id" | "slNo"> = {
   detailedReportPageNo: "",
   certificateAttached: false,
   certificateImage: "",
+  certificateImages: [],
   hoursSpent: 0,
   pointsEarned: 0,
   description: "",
@@ -629,63 +630,97 @@ export function ActivityList({
               </div>
 
               <div className="space-y-2">
-                <Label>Certificate Image</Label>
+                <Label>Certificate Images</Label>
 
-                {activities?.[editingIndex]?.certificateImage ? (
-                  <div className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted w-1/2 mb-2">
-                    <img
-                      src={activities[editingIndex].certificateImage!}
-                      alt="Certificate"
-                      className="w-full h-full object-contain"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue(`activities.${editingIndex}.certificateImage`, "");
-                        setValue(`activities.${editingIndex}.certificateAttached`, false);
-                      }}
-                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : null}
+                {(() => {
+                  const certImages = activities?.[editingIndex]?.certificateImages || [];
+                  // Also show legacy single image if present and not already in the array
+                  const legacyCert = activities?.[editingIndex]?.certificateImage;
+                  const allCerts = legacyCert && !certImages.includes(legacyCert)
+                    ? [legacyCert, ...certImages]
+                    : certImages;
+                  return allCerts.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {allCerts.map((cert, cIdx) => (
+                        <div key={cIdx} className="relative group border rounded-md overflow-hidden aspect-[4/3] bg-muted">
+                          <img
+                            src={cert}
+                            alt={`Certificate ${cIdx + 1}`}
+                            className="w-full h-full object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentCerts = getValues(`activities.${editingIndex}.certificateImages`) || [];
+                              // If removing the legacy image
+                              if (cert === getValues(`activities.${editingIndex}.certificateImage`)) {
+                                setValue(`activities.${editingIndex}.certificateImage`, "");
+                              }
+                              const newCerts = currentCerts.filter((_, i) => i !== (legacyCert && !currentCerts.includes(legacyCert) ? cIdx - 1 : cIdx));
+                              setValue(`activities.${editingIndex}.certificateImages`, newCerts);
+                              if (newCerts.length === 0 && !getValues(`activities.${editingIndex}.certificateImage`)) {
+                                setValue(`activities.${editingIndex}.certificateAttached`, false);
+                              }
+                            }}
+                            className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
 
                 <Input
                   type="file"
                   accept="image/*"
+                  multiple
                   className="cursor-pointer"
                   onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) {
                       if (!user?.id) {
-                        alert("Please log in to upload certificate.");
+                        alert("Please log in to upload certificates.");
                         return;
                       }
 
-                      if (file.size > 1024 * 1024) {
-                        alert(`File ${file.name} is too large. Max size is 1MB.`);
-                        return;
-                      }
+                      const validFiles = files.filter(file => {
+                        if (file.size > 1024 * 1024) {
+                          alert(`File ${file.name} is too large. Max size is 1MB.`);
+                          return false;
+                        }
+                        return true;
+                      });
+
+                      if (validFiles.length === 0) return;
 
                       try {
-                        const url = await uploadFile(file, user.id);
-                        setValue(`activities.${editingIndex}.certificateImage`, url);
+                        const uploadedUrls = await Promise.all(
+                          validFiles.map(async (file) => {
+                            return await uploadFile(file, user.id);
+                          })
+                        );
 
+                        const currentCerts = getValues(`activities.${editingIndex}.certificateImages`) || [];
+                        setValue(`activities.${editingIndex}.certificateImages`, [...currentCerts, ...uploadedUrls]);
                         setValue(`activities.${editingIndex}.certificateAttached`, true);
-
 
                         e.target.value = "";
                       } catch (err) {
-                        console.error("Error uploading file", err);
-                        alert("Error uploading certificate. Please try again.");
+                        console.error("Error uploading files", err);
+                        alert("Error uploading certificates. Please try again.");
                       }
                     }
                   }}
                 />
-                {activities?.[editingIndex]?.certificateImage && (
-                  <div className="text-xs text-green-600 mt-1">Certificate attached</div>
-                )}
+                <div className="text-xs text-muted-foreground mt-1">
+                  {(() => {
+                    const count = (activities?.[editingIndex]?.certificateImages || []).length
+                      + (activities?.[editingIndex]?.certificateImage ? 1 : 0);
+                    return `${count} certificate${count !== 1 ? 's' : ''} attached`;
+                  })()}
+                </div>
               </div>
 
               <div className="flex justify-end pt-4">

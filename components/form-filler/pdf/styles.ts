@@ -318,6 +318,13 @@ export const styles = StyleSheet.create({
     height: 220,
     objectFit: "contain",
   },
+  fullPageImage: {
+    width: "100%",
+    flex: 1,
+    objectFit: "contain",
+    marginTop: 10,
+    marginBottom: 10,
+  },
   certificateImage: {
     width: "100%",
     height: 500,

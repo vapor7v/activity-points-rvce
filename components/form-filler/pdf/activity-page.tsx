@@ -60,46 +60,52 @@ export const ActivityPages = ({
       </Page>
     );
 
-    // Page 2: Photos (only if photos exist)
+    // Photo pages: Each photo gets its own full page
     if (activity.photos && activity.photos.length > 0) {
-      pages.push(
-        <Page
-          key={`${activity.id}-photos`}
-          size="A4"
-          orientation="portrait"
-          style={styles.pagePortrait}
-        >
-          <ActivityHeader />
-          <View style={styles.photosPageContainer}>
-            {activity.photos.map((photo, idx) => (
-              <Image key={idx} src={photo} style={styles.photo} />
-            ))}
-          </View>
-          <ActivityFooter
-            department={department || ""}
-            pageOffset={startPageOffset}
-          />
-        </Page>
-      );
+      activity.photos.forEach((photo, idx) => {
+        pages.push(
+          <Page
+            key={`${activity.id}-photo-${idx}`}
+            size="A4"
+            orientation="portrait"
+            style={styles.pagePortrait}
+          >
+            <ActivityHeader />
+            <Image src={photo} style={styles.fullPageImage} />
+            <ActivityFooter
+              department={department || ""}
+              pageOffset={startPageOffset}
+            />
+          </Page>
+        );
+      });
     }
 
-    // Page 3: Certificate (only if certificate exists)
-    if (activity.certificateAttached && activity.certificateImage) {
-      pages.push(
-        <Page
-          key={`${activity.id}-certificate`}
-          size="A4"
-          orientation="portrait"
-          style={styles.pagePortrait}
-        >
-          <ActivityHeader />
-          <Image src={activity.certificateImage} style={styles.certificateImage} />
-          <ActivityFooter
-            department={department || ""}
-            pageOffset={startPageOffset}
-          />
-        </Page>
-      );
+    // Certificate pages: Each certificate gets its own full page
+    const certImages = activity.certificateImages && activity.certificateImages.length > 0
+      ? activity.certificateImages
+      : activity.certificateImage
+        ? [activity.certificateImage]
+        : [];
+
+    if (certImages.length > 0) {
+      certImages.forEach((certImg, idx) => {
+        pages.push(
+          <Page
+            key={`${activity.id}-cert-${idx}`}
+            size="A4"
+            orientation="portrait"
+            style={styles.pagePortrait}
+          >
+            <ActivityHeader />
+            <Image src={certImg} style={styles.fullPageImage} />
+            <ActivityFooter
+              department={department || ""}
+              pageOffset={startPageOffset}
+            />
+          </Page>
+        );
+      });
     }
 
     return pages;
