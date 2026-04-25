@@ -9,6 +9,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { SiMinutemailer } from 'react-icons/si'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
+import { createSupabaseBrowser } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -75,36 +76,17 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
       'confirm-pass': '',
     },
   })
-  const postEmail = async ({ email, password }: { email: string; password: string }) => {
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    }
-    // Send the POST request
-    const res = await fetch('/api/auth/signup', requestOptions)
-    const json = await res.json()
-    return json
-  }
   const sendVerifyEmail = async (data: z.infer<typeof FormSchema>) => {
-    const json = await postEmail({
+    const supabase = createSupabaseBrowser()
+    const { error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
     })
-    if (!json.error) {
+    if (!error) {
       router.replace((pathname || '/') + '?verify=true&email=' + form.getValues('email'))
       setIsConfirmed(true)
     } else {
-      if (json.error.code) {
-        toast.error(json.error.code)
-      } else if (json.error.message) {
-        toast.error(json.error.message)
-      }
+      toast.error(error.message)
     }
   }
   const inputOptClass = cn({
@@ -236,9 +218,9 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
           <InputOTP
             pattern={REGEXP_ONLY_DIGITS}
             id="input-otp"
-            maxLength={8}
+            maxLength={6}
             onChange={async (value) => {
-              if (value.length === 8) {
+              if (value.length === 6) {
                 document.getElementById('input-otp')?.blur()
                 const res = await verifyOtp({
                   email: form.getValues('email'),
@@ -259,14 +241,12 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
               <InputOTPSlot index={0} className={inputOptClass} />
               <InputOTPSlot index={1} className={inputOptClass} />
               <InputOTPSlot index={2} className={inputOptClass} />
-              <InputOTPSlot index={3} className={inputOptClass} />
             </InputOTPGroup>
             <InputOTPSeparator />
             <InputOTPGroup>
-              <InputOTPSlot index={4} className={inputOptClass} />
+              <InputOTPSlot index={3} className={inputOptClass} />
+              <InputOTPSlot index={4} className={cn(inputOptClass)} />
               <InputOTPSlot index={5} className={cn(inputOptClass)} />
-              <InputOTPSlot index={6} className={cn(inputOptClass)} />
-              <InputOTPSlot index={7} className={cn(inputOptClass)} />
             </InputOTPGroup>
           </InputOTP>
           <div className="text-sm flex gap-2">
@@ -276,12 +256,13 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
               onClick={async () => {
                 if (!isSendAgain) {
                   startSendAgain(async () => {
-                    if (!form.getValues('password')) {
-                      const json = await postEmail({
-                        email: form.getValues('email'),
-                        password: form.getValues('password'),
+                    if (form.getValues('password')) {
+                      const supabase = createSupabaseBrowser()
+                      const { error } = await supabase.auth.resend({
+                        type: 'signup',
+                        email: form.getValues('email') || existEmail || '',
                       })
-                      if (json.error) {
+                      if (error) {
                         toast.error('Fail to resend email')
                       } else {
                         toast.success('Please check your email.')
