@@ -19,12 +19,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { verifyOtp } from '@/actions/auth'
 import { toast } from 'sonner'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 const FormSchema = z
   .object({
     email: z.string().email({
@@ -52,17 +52,21 @@ const FormSchema = z
     }
   )
 export default function SignUp({ redirectTo }: { redirectTo: string }) {
-  const queryString = typeof window !== 'undefined' ? window.location.search : ''
-  const urlParams = new URLSearchParams(queryString)
-  const verify = urlParams.get('verify')
-  const existEmail = urlParams.get('email')
+  const searchParams = useSearchParams()
+  const verify = searchParams.get('verify')
+  const existEmail = searchParams.get('email')
   const [passwordReveal, setPasswordReveal] = useState(false)
-  const [isConfirmed, setIsConfirmed] = useState(verify === 'true')
+  const [isConfirmed, setIsConfirmed] = useState(false)
   const [verifyStatus, setVerifyStatus] = useState<string>('')
   const [isPending, startTransition] = useTransition()
   const [isSendAgain, startSendAgain] = useTransition()
   const pathname = usePathname()
   const router = useRouter()
+  useEffect(() => {
+    if (verify === 'true') {
+      setIsConfirmed(true)
+    }
+  }, [verify])
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -232,9 +236,9 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
           <InputOTP
             pattern={REGEXP_ONLY_DIGITS}
             id="input-otp"
-            maxLength={6}
+            maxLength={8}
             onChange={async (value) => {
-              if (value.length === 6) {
+              if (value.length === 8) {
                 document.getElementById('input-otp')?.blur()
                 const res = await verifyOtp({
                   email: form.getValues('email'),
@@ -255,12 +259,14 @@ export default function SignUp({ redirectTo }: { redirectTo: string }) {
               <InputOTPSlot index={0} className={inputOptClass} />
               <InputOTPSlot index={1} className={inputOptClass} />
               <InputOTPSlot index={2} className={inputOptClass} />
+              <InputOTPSlot index={3} className={inputOptClass} />
             </InputOTPGroup>
             <InputOTPSeparator />
             <InputOTPGroup>
-              <InputOTPSlot index={3} className={inputOptClass} />
-              <InputOTPSlot index={4} className={cn(inputOptClass)} />
+              <InputOTPSlot index={4} className={inputOptClass} />
               <InputOTPSlot index={5} className={cn(inputOptClass)} />
+              <InputOTPSlot index={6} className={cn(inputOptClass)} />
+              <InputOTPSlot index={7} className={cn(inputOptClass)} />
             </InputOTPGroup>
           </InputOTP>
           <div className="text-sm flex gap-2">
