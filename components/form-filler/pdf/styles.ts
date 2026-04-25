@@ -207,8 +207,6 @@ export const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: "row",
-    borderTopWidth: 1,
-    borderTopColor: "#000",
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     borderLeftWidth: 1,
@@ -219,6 +217,8 @@ export const styles = StyleSheet.create({
   tableHeader: {
     backgroundColor: "transparent",
     fontWeight: "bold",
+    borderTopWidth: 1,
+    borderTopColor: "#000",
   },
   tableCell: {
     padding: 5,
