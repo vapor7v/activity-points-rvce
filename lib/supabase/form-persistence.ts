@@ -92,7 +92,17 @@ export async function loadFormData(): Promise<{ data?: FormFillerData; error?: s
       return { error: error.message };
     }
 
-    return { data: data.form_data as FormFillerData };
+    // Normalize activities to ensure new fields exist
+    const formData = data.form_data as FormFillerData;
+    if (formData.activities) {
+      formData.activities = formData.activities.map(activity => ({
+        ...activity,
+        photos: activity.photos || [],
+        certificateImages: activity.certificateImages || [],
+      }));
+    }
+
+    return { data: formData };
   } catch (error) {
     console.error("Error in loadFormData:", error);
     return { error: String(error) };
