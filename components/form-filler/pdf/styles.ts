@@ -204,17 +204,21 @@ export const styles = StyleSheet.create({
 
   table: {
     width: "100%",
-    borderWidth: 1,
-    borderColor: "#000",
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#000",
+    borderLeftWidth: 1,
+    borderLeftColor: "#000",
+    borderRightWidth: 1,
+    borderRightColor: "#000",
   },
   tableHeader: {
     backgroundColor: "transparent",
     fontWeight: "bold",
+    borderTopWidth: 1,
+    borderTopColor: "#000",
   },
   tableCell: {
     padding: 5,
