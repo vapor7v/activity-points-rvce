@@ -7,14 +7,10 @@ import { formatDateRange } from "./utils";
 interface IndexPagesProps {
   activities: Activity[];
   student: FormFillerData["student"];
-  activityPageNumbers: number[];
 }
 
-const FIRST_PAGE_ROWS = 6;
-const CONTINUATION_PAGE_ROWS = 10;
-
 const TableHeader = () => (
-  <View style={[styles.tableRow, styles.tableHeader]} fixed>
+  <View style={[styles.tableRow, styles.tableHeader]} wrap={false}>
     <Text style={[styles.tableCell, { width: "5%" }]}>Sl. No</Text>
     <Text style={[styles.tableCell, { width: "8%" }]}>Semester</Text>
     <Text style={[styles.tableCell, { width: "18%" }]}>
@@ -44,129 +40,93 @@ const TableHeader = () => (
   </View>
 );
 
-function paginateActivities(activities: Activity[]): Activity[][] {
-  if (activities.length === 0) return [[]];
-  const pages: Activity[][] = [];
-  // First page has fewer rows due to header/title
-  const firstPageItems = activities.slice(0, FIRST_PAGE_ROWS);
-  pages.push(firstPageItems);
-  // Remaining pages
-  let remaining = activities.slice(FIRST_PAGE_ROWS);
-  while (remaining.length > 0) {
-    pages.push(remaining.slice(0, CONTINUATION_PAGE_ROWS));
-    remaining = remaining.slice(CONTINUATION_PAGE_ROWS);
-  }
-  return pages;
-}
+export const IndexPages = ({ activities, student }: IndexPagesProps) => {
+  return (
+    <Page
+      size="A4"
+      orientation="landscape"
+      style={styles.pageLandscape}
+      wrap={true}
+    >
+      <Header />
 
-export const IndexPages = ({ activities, student, activityPageNumbers }: IndexPagesProps) => {
-  const activityPages = paginateActivities(activities);
+      <Text style={styles.sectionTitle}>AICTE-Activity Book</Text>
+      <View style={styles.studentInfoLine}>
+        <Text>
+          <Text style={{ fontWeight: "bold" }}>Name:</Text>{" "}
+          {student.name || "Student Name"}
+        </Text>
+        <Text>
+          <Text style={{ fontWeight: "bold" }}>USN:</Text>{" "}
+          {student.usn || "USN"}
+        </Text>
+      </View>
+      <Text style={styles.subsectionTitle}>Index sheet</Text>
 
-  let runningIndex = 0;
+      <View style={styles.table}>
+        <TableHeader />
 
-  return activityPages.map((pageActivities, pageIndex) => {
-    const isFirstPage = pageIndex === 0;
-    const isLastPage = pageIndex === activityPages.length - 1;
-
-    const page = (
-      <Page
-        key={`index-${pageIndex}`}
-        size="A4"
-        orientation="landscape"
-        style={styles.pageLandscape}
-      >
-        {isFirstPage && <Header />}
-
-        {isFirstPage && (
-          <>
-            <Text style={styles.sectionTitle}>AICTE-Activity Book</Text>
-            <View style={styles.studentInfoLine}>
-              <Text>
-                <Text style={{ fontWeight: "bold" }}>Name:</Text>{" "}
-                {student.name || "Student Name"}
+        {activities.length > 0 ? (
+          activities.map((activity, idx) => (
+            <View key={activity.id} style={styles.tableRow} wrap={false}>
+              <Text style={[styles.tableCell, { width: "5%" }]}>
+                {idx + 1}
               </Text>
-              <Text>
-                <Text style={{ fontWeight: "bold" }}>USN:</Text>{" "}
-                {student.usn || "USN"}
+              <Text style={[styles.tableCell, { width: "8%" }]}>
+                {activity.semester}
               </Text>
-            </View>
-            <Text style={styles.subsectionTitle}>Index sheet</Text>
-          </>
-        )}
-
-        <View style={styles.table}>
-          <TableHeader />
-
-          {pageActivities.length > 0 ? (
-            pageActivities.map((activity, idx) => {
-              const slNo = runningIndex + idx + 1;
-              return (
-                <View key={activity.id} style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { width: "5%" }]}>
-                    {slNo}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "8%" }]}>
-                    {activity.semester}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "18%" }]}>
-                    {activity.name}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "12%" }]}>
-                    {activity.aicteMapping}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "12%" }]}>
-                    {formatDateRange(activity)}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "12%" }]}>
-                    {activity.place}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "8%" }]}>
-                    {activityPageNumbers[runningIndex + idx] || ""}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "10%" }]}>
-                    {activity.certificateAttached ? "Y" : "N"}
-                  </Text>
-                  <Text style={[styles.tableCell, { width: "7%" }]}>
-                    {activity.pointsEarned}
-                  </Text>
-                  <Text style={[styles.tableCellLast, { width: "8%" }]}></Text>
-                </View>
-              );
-            })
-          ) : (
-            <View style={styles.tableRow}>
-              <Text
-                style={[
-                  styles.tableCell,
-                  { width: "100%", color: "#999", fontStyle: "italic" },
-                ]}
-              >
-                No activities added
+              <Text style={[styles.tableCell, { width: "18%" }]}>
+                {activity.name}
               </Text>
-            </View>
-          )}
-        </View>
-
-        {isLastPage && (
-          <View style={styles.hodSignatureSection}>
-            <View style={styles.signatureBlock}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureLabel}>Signature of HoD</Text>
-            </View>
-            <View style={styles.signatureBlock}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureLabel}>
-                Signature of NCC/NSS officer/DSA/Dean CAT
+              <Text style={[styles.tableCell, { width: "12%" }]}>
+                {activity.aicteMapping}
               </Text>
+              <Text style={[styles.tableCell, { width: "12%" }]}>
+                {formatDateRange(activity)}
+              </Text>
+              <Text style={[styles.tableCell, { width: "12%" }]}>
+                {activity.place}
+              </Text>
+              <Text style={[styles.tableCell, { width: "8%" }]}>
+                {activity.detailedReportPageNo || ""}
+              </Text>
+              <Text style={[styles.tableCell, { width: "10%" }]}>
+                {activity.certificateAttached ? "Y" : "N"}
+              </Text>
+              <Text style={[styles.tableCell, { width: "7%" }]}>
+                {activity.pointsEarned}
+              </Text>
+              <Text style={[styles.tableCellLast, { width: "8%" }]}></Text>
             </View>
+          ))
+        ) : (
+          <View style={styles.tableRow}>
+            <Text
+              style={[
+                styles.tableCell,
+                { width: "100%", color: "#999", fontStyle: "italic" },
+              ]}
+            >
+              No activities added
+            </Text>
           </View>
         )}
+      </View>
 
-        <Footer />
-      </Page>
-    );
+      <View style={styles.hodSignatureSection}>
+        <View style={styles.signatureBlock}>
+          <View style={styles.signatureLine} />
+          <Text style={styles.signatureLabel}>Signature of HoD</Text>
+        </View>
+        <View style={styles.signatureBlock}>
+          <View style={styles.signatureLine} />
+          <Text style={styles.signatureLabel}>
+            Signature of NCC/NSS officer/DSA/Dean CAT
+          </Text>
+        </View>
+      </View>
 
-    runningIndex += pageActivities.length;
-    return page;
-  });
+      <Footer />
+    </Page>
+  );
 };

@@ -7,18 +7,19 @@ import { formatDateRange } from "./utils";
 interface ActivityPagesProps {
   activities: Activity[];
   department: string;
-  startPageOffset: number;
 }
 
 export const ActivityPages = ({
   activities,
   department,
-  startPageOffset,
 }: ActivityPagesProps) => {
+  let pageCounter = 0; // tracks the relative page number starting from 1
+
   return activities.flatMap((activity, index) => {
     const pages = [];
 
-    // Page 1: Activity details only (strict - always one page)
+    // Page: Activity details only (strict - always one page)
+    pageCounter++;
     pages.push(
       <Page
         key={`${activity.id}-details`}
@@ -55,7 +56,7 @@ export const ActivityPages = ({
         </View>
         <ActivityFooter
           department={department || ""}
-          pageOffset={startPageOffset}
+          staticPageNumber={pageCounter}
         />
       </Page>
     );
@@ -63,6 +64,7 @@ export const ActivityPages = ({
     // Photo pages: Each photo gets its own page with "Photos" label and bounding box
     if (activity.photos && activity.photos.length > 0) {
       activity.photos.forEach((photo, idx) => {
+        pageCounter++;
         pages.push(
           <Page
             key={`${activity.id}-photo-${idx}`}
@@ -81,7 +83,7 @@ export const ActivityPages = ({
             </View>
             <ActivityFooter
               department={department || ""}
-              pageOffset={startPageOffset}
+              staticPageNumber={pageCounter}
             />
           </Page>
         );
@@ -97,6 +99,7 @@ export const ActivityPages = ({
 
     if (certImages.length > 0) {
       certImages.forEach((certImg, idx) => {
+        pageCounter++;
         pages.push(
           <Page
             key={`${activity.id}-cert-${idx}`}
@@ -108,7 +111,7 @@ export const ActivityPages = ({
             <Image src={certImg} style={styles.fullPageImage} />
             <ActivityFooter
               department={department || ""}
-              pageOffset={startPageOffset}
+              staticPageNumber={pageCounter}
             />
           </Page>
         );

@@ -42,10 +42,10 @@ export const ActivityHeader = () => (
 
 export const ActivityFooter = ({
   department,
-  pageOffset,
+  staticPageNumber,
 }: {
   department: string;
-  pageOffset: number;
+  staticPageNumber: number;
 }) => (
   <View style={styles.activityFooter} fixed>
     <Text style={{ width: "30%" }}>AICTE Activity Points</Text>
@@ -59,11 +59,7 @@ export const ActivityFooter = ({
         justifyContent: "center",
       }}
     >
-      <Text
-        render={({ pageNumber }) => {
-          return `${pageNumber - pageOffset}`;
-        }}
-      />
+      <Text>{staticPageNumber}</Text>
     </View>
     <View style={{ width: "30%", alignItems: "flex-end" }}>
       <Text style={{ textAlign: "right" }}>Department of {department}</Text>
