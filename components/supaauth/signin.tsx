@@ -3,11 +3,10 @@
 import React, { useState, useTransition } from 'react'
 import Social from './social'
 import Image from 'next/image'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod/v3'
-import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa6'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,14 +22,13 @@ import { toast } from 'sonner'
 import { createSupabaseBrowser } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+
 const FormSchema = z.object({
   email: z.string().email({
     message: 'Invalid Email Address',
   }),
-  password: z.string().min(6, {
-    message: 'Password is too short',
-  }),
 })
+
 export default function SignIn() {
   const searchParams = useSearchParams()
   const appName = process.env.NEXT_PUBLIC_APP_NAME!
@@ -66,33 +64,68 @@ export default function SignIn() {
 
 
 export function SignInForm({ redirectTo }: { redirectTo: string }) {
-  const [passwordReveal, setPasswordReveal] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const router = useRouter()
+  const [emailSent, setEmailSent] = useState(false)
+  const [sentEmail, setSentEmail] = useState('')
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: '',
-      password: '',
     },
   })
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const supabase = createSupabaseBrowser()
     if (!isPending) {
       startTransition(async () => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithOtp({
           email: data.email,
-          password: data.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
+            shouldCreateUser: true,
+          },
         })
         if (error) {
           toast.error(error.message)
         } else {
-          router.push(redirectTo)
-          router.refresh()
+          setSentEmail(data.email)
+          setEmailSent(true)
+          toast.success('Magic link sent! Check your email inbox.')
         }
       })
     }
   }
+
+  if (emailSent) {
+    return (
+      <div className="text-center space-y-4 py-4">
+        <div className="text-4xl">📧</div>
+        <div>
+          <p className="font-semibold text-sm">Check your email</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            We sent a magic login link to <span className="font-medium text-foreground">{sentEmail}</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Click the link in your email to sign in — no password needed!
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+          onClick={() => {
+            setEmailSent(false)
+            setSentEmail('')
+            form.reset()
+          }}
+        >
+          Use a different email
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -109,45 +142,15 @@ export function SignInForm({ redirectTo }: { redirectTo: string }) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-semibold">Password</FormLabel>
-              <FormControl>
-                <div className=" relative">
-                  <Input className="h-8" type={passwordReveal ? 'text' : 'password'} {...field} />
-                  <div
-                    className="absolute right-2 top-[30%] cursor-pointer group"
-                    onClick={() => setPasswordReveal(!passwordReveal)}
-                  >
-                    {passwordReveal ? (
-                      <FaRegEye className=" group-hover:scale-105 transition-all" />
-                    ) : (
-                      <FaRegEyeSlash className=" group-hover:scale-105 transition-all" />
-                    )}
-                  </div>
-                </div>
-              </FormControl>
-              <FormMessage className="text-red-500" />
-              <div className="flex justify-end w-full">
-                <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
-                  Forgot Password?
-                </Link>
-              </div>
-            </FormItem>
-          )}
-        />
         <Button
           type="submit"
           className="w-full h-8 bg-indigo-500 hover:bg-indigo-600 transition-all text-white flex items-center gap-2"
         >
           <AiOutlineLoading3Quarters className={cn(!isPending ? 'hidden' : 'block animate-spin')} />
-          Continue
+          Send Magic Link
         </Button>
       </form>
-      <div className="text-center text-sm">
+      <div className="text-center text-sm mt-4">
         <h1>
           Don&apos;t have an account yet?{' '}
           <Link
