@@ -111,6 +111,24 @@ export const IndexPages = ({ activities, student }: IndexPagesProps) => {
             </Text>
           </View>
         )}
+
+        {/* Total Points Row */}
+        <View style={[styles.tableRow, { borderTopWidth: 1, borderTopColor: "#000" }]} wrap={false}>
+          <Text style={[styles.tableCell, { width: "5%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "8%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "18%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "12%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "12%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "12%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "8%" }]}></Text>
+          <Text style={[styles.tableCell, { width: "10%", fontWeight: "bold" }]}>
+            Total
+          </Text>
+          <Text style={[styles.tableCell, { width: "7%", fontWeight: "bold" }]}>
+            {activities.reduce((sum, a) => sum + (Number(a.pointsEarned) || 0), 0)}
+          </Text>
+          <Text style={[styles.tableCellLast, { width: "8%" }]}></Text>
+        </View>
       </View>
 
       <View style={styles.hodSignatureSection}>

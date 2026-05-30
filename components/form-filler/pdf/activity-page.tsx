@@ -61,7 +61,7 @@ export const ActivityPages = ({
       </Page>
     );
 
-    // Photo pages: Each photo gets its own page with "Photos" label and bounding box
+    // Photo pages: Each photo gets its own full page (no labels/borders)
     if (activity.photos && activity.photos.length > 0) {
       activity.photos.forEach((photo, idx) => {
         pageCounter++;
@@ -73,14 +73,7 @@ export const ActivityPages = ({
             style={styles.pagePortrait}
           >
             <ActivityHeader />
-            <View style={styles.activityTable}>
-              <View style={styles.photoRow}>
-                <Text style={styles.activityLabel}>Photos</Text>
-                <View style={styles.photoFullCell}>
-                  <Image src={photo} style={styles.photoFull} />
-                </View>
-              </View>
-            </View>
+            <Image src={photo} style={styles.fullPageImage} />
             <ActivityFooter
               department={department || ""}
               staticPageNumber={pageCounter}
